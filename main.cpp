@@ -4,23 +4,29 @@
 using namespace std;
 
 int main(){
-    // manual file reading, will not read any files except the ones in this array so if later i add more files i will have to manually ad them here
-    // see automatic file reading later
-    string filenames[] = {"textFiles/book1.txt", "textFiles/book2.txt", "textFiles/book3.txt"};
-    safeArray<string> allTokens;
+    safeArray<string> filenames = getAllTextFiles();
+    safeArray<FileData> allFiles;
 
-    for (string fname : filenames) {
-        ifstream file(fname);
+    for (int i = 0; i < filenames.size(); i++) {
+        ifstream file(filenames[i]);
         if (!file) {
-            cerr << "error opening " << fname << endl;
+            cerr << "Error opening: " << filenames[i] << endl;
             continue;
         }
+
+        FileData currentFile;
+        currentFile.filename = filenames[i];
+
         string line;
         while (getline(file, line)) {
-            string cleanedLine = removePunctuation(line);
-            tokenize(cleanedLine, allTokens);
+            string cleaned = removePunctuation(line);
+            tokenize(cleaned, currentFile.tokens);
         }
         file.close();
+
+        generateFrequency(currentFile.tokens, currentFile.freqList);
+        allFiles.pushback(currentFile);
+
+        displayFileStats(allFiles);
     }
-    allTokens.print();
 }
