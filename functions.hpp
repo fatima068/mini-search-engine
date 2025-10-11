@@ -7,7 +7,7 @@
 #include "dataStructures.hpp"
 using namespace std;
 
-/*we want to read line from txt, clean it using removePunctuation(), then return that line and parse that*/
+// read line from txt, clean it using removePunctuation(), then return that line and parse that
 string removePunctuation(const string& line) {
     string cleaned;
     for (char ch : line) {
@@ -16,7 +16,7 @@ string removePunctuation(const string& line) {
         }
     }
     return cleaned;
-}
+} // if the file has stuff like don’t or it’s, we want to keep the apostrophe but this function isnt doing that, consider it if time left end mei 
 
 void tokenize(const string& line, safeArray<string>& tokenArr){
     stringstream ss(line);
