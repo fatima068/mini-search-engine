@@ -15,7 +15,7 @@ const string stopWords[] = {
 
 const int numStopWords = sizeof(stopWords) / sizeof(stopWords[0]);
 
-safeArray<string> getAllTextFiles() { // returns aray of all txt files in the specified folder - to automate file reading and new files detection 
+safeArray<string> getAllTextFiles() { // returns aray of names of all txt files in the specified folder - to automate file reading and new files detection 
     safeArray<string> fileList;
     for (const auto& entry : fs::directory_iterator("textFiles")) {
         if (entry.path().extension() == ".txt") {
@@ -25,8 +25,7 @@ safeArray<string> getAllTextFiles() { // returns aray of all txt files in the sp
     return fileList;
 }
 
-// read line from txt, clean it using removePunctuation(), then return that line and tokenize that
-string removePunctuation(const string& line) {
+string removePunctuation(const string& line) { // read line from file, clean it using removePunctuation() and return
     string cleaned;
     for (char ch : line) {
         if (!ispunct(ch)) {  
@@ -45,7 +44,7 @@ bool isStopWord(const string& word) {
     return false;
 }
 
-void tokenize(const string& line, safeArray<string>& tokenArr){
+void tokenize(const string& line, safeArray<string>& tokenArr){ // tokenizing the cleaned line and pushing all tokens to the array of respective file 
     stringstream ss(line);
     string token;
     while (ss >> token) {
@@ -55,10 +54,31 @@ void tokenize(const string& line, safeArray<string>& tokenArr){
 }
 
 
-void generateFrequency(safeArray<string> &tokens, HashTable &freqTable) {
+void generateFrequency(safeArray<string> &tokens, HashTable &freqTable) { // inserts each word in the given token array in the frequency hash table of that file 
     for (int i = 0; i < tokens.size(); i++)
         freqTable.insertWord(tokens[i]);
 }
+
+void buildInvertedIndex(safeArray<FileData>& allFiles, InvertedIndexHashTable& globalIndex) {
+    for (int i = 0; i < allFiles.size(); i++) {
+        FileData& current = allFiles[i];
+        for (int j = 0; j < current.tokens.size(); j++) {
+            string word = current.tokens[j];
+            int freq = current.freqTable.getFrequency(word);
+            globalIndex.insert(word, current.filename, freq);
+        }
+    }
+    cout << "\nGlobal inverted index built successfully.\n";
+}
+
+// safeArray<FileNode> searchWord(const string& query, HashTable& globalIndex);
+// void sortResultsByFrequency(safeArray<FileNode>& results);
+// void displayResults(const safeArray<FileNode>& results);
+// void displayTopWords(FileData& file, int N);
+// void runConsoleMenu(HashTable& globalIndex, safeArray<FileData>& allFiles);
+
+// void addToHistory(HistoryNode*& head, const string& query);
+// void showHistory(HistoryNode* head);
 
 void displayFileStats(const safeArray<FileData> &allFiles) {
     for (int i = 0; i < allFiles.size(); i++) {
