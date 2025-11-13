@@ -1,9 +1,12 @@
+#ifndef DATASTRUCTURES_HPP
+#define DATASTRUCTURES_HPP
+
 #include <iostream>
 #include <cstdlib>
-#include<string.h>
 using namespace std;
+// #include <cstring>
+// #include <string>
 
-// 1. DYNAMIC SAFE ARRAY 
 template <typename T>
 class safeArray {
     private:
@@ -32,7 +35,7 @@ class safeArray {
     } // add resize function instead of copying everytime 
 
     ~safeArray (){
-        delete [] dynamicArray; //free allocated memory
+        delete [] dynamicArray;
         dynamicArray=NULL;
     }
 
@@ -57,6 +60,7 @@ class safeArray {
 
         return *this;
     }
+
     void print() {
         for(int i = 0; i < ncols; i++)
             cout << dynamicArray[i] << ", ";
@@ -80,7 +84,6 @@ struct HashNode { // for the hash table which stores frequency of words in a fil
     }
 };
 
-
 class HashTable {
     private:
     int tableSize;
@@ -100,6 +103,10 @@ class HashTable {
         for (int i = 0; i< tableSize; i++) {
             table[i] = nullptr;
         } 
+    }
+
+    HashNode** getTable() const {
+        return table;
     }
 
     HashTable(const HashTable &rhs) {
@@ -127,7 +134,7 @@ class HashTable {
     HashTable& operator=(const HashTable &rhs) {
         if (this == &rhs) {return *this; }
 
-        for (int i = 0; i < tableSize; i++) { // cleaning existing data before assigning new data
+        for (int i = 0; i < tableSize; i++) { //cleaning existing data before assigning new data
             HashNode* current = table[i];
             while (current != nullptr) {
                 HashNode* next = current->next;
@@ -136,7 +143,6 @@ class HashTable {
             }
         }
         delete[] table;
-
         tableSize = rhs.tableSize; // allocate new table
         table = new HashNode*[tableSize];
 
@@ -148,7 +154,6 @@ class HashTable {
 
                 HashNode* srcCurr = rhs.table[i]->next;
                 HashNode* destCurr = table[i];
-
                 while (srcCurr != nullptr) {
                     destCurr->next = new HashNode(srcCurr->word, srcCurr->count);
                     destCurr = destCurr->next;
@@ -156,10 +161,8 @@ class HashTable {
                 }
             }
         }
-
         return *this;
     }
-
 
     void insertWord(const string& word) {
         int index = hashFunction(word);
@@ -222,21 +225,22 @@ class HashTable {
     }
 };
 
-struct FileData {
+struct FileData { // being used in functions.cpp to store data of each file
     string filename;
     safeArray<string> tokens;
     HashTable freqTable;
 };
 
-struct FileNode { 
+struct FileNode {  //linked list for frequency and destination file of given word in inverted index table 
     string filename;
     int frequency;
     FileNode* next;
     
+    FileNode() : filename(""), frequency(0), next(nullptr) {}
+
     FileNode(string filename, int frequency) : filename(filename), frequency(frequency), next(nullptr) {}
 };
 
-// INVERTED INDEX TABLE 
 struct InvertedIndexTableNode {
     string word;
     FileNode* fileList;
@@ -244,10 +248,14 @@ struct InvertedIndexTableNode {
     InvertedIndexTableNode(string word) : word(word), fileList(nullptr), next(nullptr) {}
 };
 
-class InvertedIndexHashTable {
+class InvertedIndexHashTable { // maps each word to the list of files in which it appears 
     private:
     int tableSize;
     InvertedIndexTableNode** table;
+    // table
+    // ↓
+    // pointer → array of pointers → each points to the head of a linked list of InvertedIndexTableNode
+    // inside every InvertedIndexTableNode there is a linked list of FileNodes
 
     int hashFunction(const string& key) {
         unsigned long hash = 0;
@@ -423,7 +431,7 @@ class InvertedIndexHashTable {
             current = current->next;
         }
 
-        // Word not found — add new word entry
+        // word not found, so add new
         InvertedIndexTableNode* newEntry = new InvertedIndexTableNode(word);
         FileNode* newFile = new FileNode(filename, frequency);
         newEntry->fileList = newFile;
@@ -446,7 +454,7 @@ class InvertedIndexHashTable {
     }
 
     void display() {
-        cout << "\n===== Global Inverted Index =====\n";
+        cout << "\n--GLOBAL INVERTED INDEX--" << endl;
         for (int i = 0; i < tableSize; i++) {
             InvertedIndexTableNode* current = table[i];
             while (current != nullptr) {
@@ -460,21 +468,53 @@ class InvertedIndexHashTable {
                 current = current->next;
             }
         }
-        cout << "=================================\n";
     }
-
 };
 
+struct SearchHistoryNode { //linked list based stack for search history
+    string query;
+    SearchHistoryNode* next;
+    SearchHistoryNode(string query) : query(query), next(nullptr) {}
+};
 
-// struct ResultNode { // for ranking of search results
-//     string filename;
-//     int frequency;
-//     ResultNode* left;
-//     ResultNode* right;
-// };
+class SearchHistory { // history stack 
+    private:
+    SearchHistoryNode* top;
 
-// struct HistoryNode { // to maintain search history
-//     string query;
-//     HistoryNode* next;
-//     HistoryNode(string q) : query(q), next(nullptr) {}
-// };
+    public:
+    SearchHistory() : top(nullptr) {}
+
+    void push(const string& query) {
+        SearchHistoryNode* newNode = new SearchHistoryNode(query);
+        newNode->next = top;
+        top = newNode;
+    }
+
+    void display() {
+        if (top == nullptr) {
+            cout << "search history empty" << endl;
+            return;
+        }
+        cout << "\nSearch History:" << endl; 
+        SearchHistoryNode* temp = top;
+        int count = 1;
+        while (temp != nullptr) {
+            cout << count++ << ". " << temp->query << endl;
+            temp = temp->next;
+        }
+    }
+
+    void clear() {
+        while (top != nullptr) {
+            SearchHistoryNode* temp = top;
+            top = top->next;
+            delete temp;
+        }
+        cout << "search history cleared" << endl;
+    }
+
+    ~SearchHistory() {
+        clear();
+    }
+};
+#endif

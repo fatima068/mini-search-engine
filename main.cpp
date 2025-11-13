@@ -2,6 +2,7 @@
 #include <fstream>
 #include <chrono>
 #include "functions.hpp"
+#include "dataStructures.hpp"
 using namespace std;
 
 int main() {
@@ -36,33 +37,9 @@ int main() {
     InvertedIndexHashTable globalIndex;
     buildInvertedIndex(allFiles, globalIndex);
 
-    // globalIndex.display(); // display the inverted index
-
-    string testWord; // testing the search functionality using the inverted index created
-    cout << endl << "Enter a word to search (or type 'exit'): ";
-    while (true) {
-        cin >> testWord;
-        if (testWord == "exit") break;
-
-        FileNode* result = globalIndex.search(testWord); 
-        if (result == nullptr) {
-            cout << "Word not found in any file"<< endl;
-        } else {
-            cout << "\nfiles containing '" << testWord << "':" << endl;
-            while (result != nullptr) {
-                cout << "  " << result->filename << " (" << result->frequency << " occurrences)\n";
-                result = result->next;
-            }
-        }
-        cout << "\nEnter another word to search (or 'exit'): ";
-    }
-
+    menu(globalIndex, allFiles);
+    
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> duration = end - start;
     cout << "\nExecution Time: " << duration.count() << " seconds.\n";
-
-
-
-}
-
-
+}    
