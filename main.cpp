@@ -206,7 +206,7 @@ int main() {
     rankedSearchButtonText.setStyle(Text::Bold);
     rankedSearchButtonText.setPosition({1120.f, 295.f});
 
-    RectangleShape rankedResultsBox({1600.f, 400.f});
+    RectangleShape rankedResultsBox({1600.f, 430.f});
     rankedResultsBox.setPosition({100.f, 350.f});
     rankedResultsBox.setFillColor(Color::White);
     rankedResultsBox.setOutlineThickness(2);
@@ -283,6 +283,7 @@ int main() {
                         cout << "Search Word button clicked!" << endl;
                         currentScreen = Screen::SEARCH;
                         currentInput = "";
+                        searchResults.clear();
                         searchScrollOffset = 0.f; // Reset scroll when switching to search
                     } 
                     else if (button2.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
@@ -362,7 +363,7 @@ int main() {
                     if (entered == 8 && !currentInput.empty()) {
                         currentInput.pop_back();
                     }
-                    else if (entered >= 32 && entered < 127) {
+                    else if (entered >= 32 && entered < 127 && currentInput.size() < 48) {
                         currentInput += entered;
                     }
                 }
@@ -441,7 +442,7 @@ int main() {
                                 if (fileN < 1 || fileN > allFiles.size()) {
                                     rankedOutput.clear();
                                     rankedOutput.pushback("File number must be between 1 and " + to_string(allFiles.size()));
-                                } else if (Nwords < 1) {
+                                } else if(Nwords < 1){
                                     rankedOutput.clear();
                                     rankedOutput.pushback("enter N > 0");
                                 }else {
@@ -536,7 +537,6 @@ int main() {
             window1.draw(backButtonText);
             
             if (currentScreen == Screen::SEARCH) {
-                // Update input text display
                 string displayText = currentInput + '_';
                 inputTextSearchPg.setString(displayText);
 
@@ -551,7 +551,7 @@ int main() {
                 float searchContentHeight = static_cast<float>(searchResults.size()) * 25.f;
                 float searchVisibleHeight = 400.f;
                 if (searchContentHeight > searchVisibleHeight) {
-                    float scrollbarHeight = (searchVisibleHeight / searchContentHeight) * 400.f;
+                    float scrollbarHeight = (searchVisibleHeight/searchContentHeight) * 400.f;
                     float scrollbarPos = (searchScrollOffset / (searchContentHeight - searchVisibleHeight)) * (400.f - scrollbarHeight);
                     
                     searchScrollbar.setSize({15.f, scrollbarHeight});
@@ -620,26 +620,27 @@ int main() {
                 window1.draw(rankedSearchButtonText);
                 window1.draw(rankedResultsBox);
 
-                float rankedContentHeight = static_cast<float>(rankedOutput.size()) * 25.f; //scrollbar
+                float rankedContentHeight = static_cast<float>(rankedOutput.size()) * 25.f;
                 float rankedVisibleHeight = 400.f;
                 if (rankedContentHeight > rankedVisibleHeight) {
                     float scrollbarHeight = (rankedVisibleHeight / rankedContentHeight) * 400.f;
-                    float scrollbarPos = (rankedScrollOffset / (rankedContentHeight - rankedVisibleHeight)) * (400.f - scrollbarHeight);
+                    float maxScrollOffset = rankedContentHeight- rankedVisibleHeight;
+                    float scrollbarPos = (rankedScrollOffset/maxScrollOffset)*(400.f - scrollbarHeight);
                     
-                    rankedScrollbar.setSize({15.f, scrollbarHeight});
-                    rankedScrollbar.setPosition({1690.f, 350.f + scrollbarPos});
+                    rankedScrollbar.setSize({15.f,scrollbarHeight});
+                    rankedScrollbar.setPosition({1690.f,350.f +scrollbarPos});
                     window1.draw(rankedScrollbar);
                 }
 
                 float y = 360.f - rankedScrollOffset;
-                for (int i = 0; i < rankedOutput.size(); i++) {
-                    if (y >= 360.f - 25.f && y <= 730.f) { //drawing visible items
+                for (int i = 0; i < rankedOutput.size(); i++){
+                    if (y >= 360.f && y <= 760.f) { //drawing visible items
                         resultText.setString(rankedOutput[i]);
-                        resultText.setPosition({120.f, y});
+                        resultText.setPosition( {120.f, y} );
                         window1.draw(resultText);
                     }
                     y += 25.f;
-                    if (y > 730.f) break;
+                    if (y >760.f) break;
                 }
             }
         }

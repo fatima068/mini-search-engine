@@ -73,15 +73,6 @@ void buildInvertedIndex(safeArray<FileData>& allFiles, InvertedIndexHashTable& g
     cout << endl<< "built global inverted index" << endl;
 }
 
-// void displayFileStats(const safeArray<FileData> &allFiles) {
-//     for (int i = 0; i < allFiles.size(); i++) {
-//         cout << endl<< "File: " << allFiles[i].filename << endl;
-//         cout << "Total Tokens: " << allFiles[i].tokens.size() << endl;
-//         cout << "Word Frequencies:" <<endl;
-//         allFiles[i].freqTable.display();
-//     }
-// }
-
 void displayResults(const safeArray<FileNode>& results, const string& query) {
     if (results.size() == 0) {
         cout << "no results found for '" <<query << "'\n";
@@ -98,8 +89,6 @@ void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<
     cout << "\ntop " <<n << " words in file: " << file.filename << endl;
 
     //Extract all (word, frequency) pairs into arrays for sorting because sorting is easier on arrays
-    // safeArray<string> words;
-    // safeArray<int> freqs;
     for (int i = 0; i < file.freqTable.getSize(); i++) {
         // traverse each hash bucket
         HashNode* current = file.freqTable.getTable()[i];
@@ -126,10 +115,6 @@ void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<
             words[maxIndex] = tempWord;
         }
     }
-
-    // for (int i = 0; i < n; i++) {
-    //     cout << i + 1 << ". " << words[i] << " (" << to_string(freqs[i]) << ")\n";
-    // }
 }
 
 safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const string& query){ //search a word and return sorted array of results
@@ -155,65 +140,4 @@ safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const str
     }
     return results;
 }
-
-// void menu(InvertedIndexHashTable& globalIndex, safeArray<FileData>& allFiles) {
-//     int choice;
-//     SearchHistory history;
-
-//     while (true) {
-//         cout << "\n-- MINI SEARCH ENGINE --"<< endl;
-//         cout << "1. Search for a word"<< endl;
-//         cout << "2. View top n words in a file"<< endl;
-//         cout << "3. View search history"<< endl;
-//         cout << "4. Clear search history"<< endl;
-//         cout << "5. Exit"<< endl;
-//         cout << "Enter your choice (1 - 5): ";
-//         cin >> choice;
-
-//         if (choice == 1) {
-//             string query;
-//             cout << "\nEnter the word to search: ";
-//             cin >> query;
-//             history.push(query);
-
-//             safeArray<FileNode> results = performSearch(globalIndex, query);
-//             displayResults(results, query);
-//         } 
-//         else if (choice == 2) {
-//             cout << "\nAvailable files:\n";
-//             for (int i = 0; i < allFiles.size(); i++) {
-//                 cout << i + 1 << ". " << allFiles[i].filename << endl;
-//             }
-
-//             int fileChoice, n;
-//             cout << "\nSelect file number: ";
-//             cin >> fileChoice;
-//             cout << "Enter N (number of top words to view): ";
-//             cin >> n;
-
-//             if (fileChoice > 0 && fileChoice <= allFiles.size()) {
-//                 safeArray<string> words;
-//                 safeArray<int> freqs;
-//                 displayTopWords(allFiles[fileChoice - 1], n, words, freqs);
-//                 //Display top n words
-//                 for (int i = 0; i<n && i<freqs.size(); i++) {
-//                     cout << i + 1 << ". " << words[i] << " (" << freqs[i] << ")\n";
-//                 }
-//             } else cout << "Invalid file choice\n";
-//         } 
-//         else if (choice == 3) {
-//             history.display();
-//         }
-//         else if (choice == 4) {
-//             history.clear();
-//         }
-//         else if (choice == 5) {
-//             cout << "exiting search engine..." << endl;
-//             break;
-//         } 
-//         else {
-//             cout << "Enter a valid choice (1-5)" << endl;
-//         }
-//     }
-// }
 #endif
