@@ -494,6 +494,10 @@ class SearchHistory { // history stack
         top = newNode;
     }
 
+    SearchHistoryNode* peek() {
+        return top;
+    }
+
     void display() {
         if (top == nullptr) {
             cout << "search history empty" << endl;
@@ -506,6 +510,16 @@ class SearchHistory { // history stack
             cout << count++ << ". " << temp->query << endl;
             temp = temp->next;
         }
+    }
+
+    void pop(){
+        if (top==nullptr){
+            cout<<"search history empty, cannot pop"<< endl;
+            return;
+        }
+        SearchHistoryNode* temp = top;
+        top = top->next;
+        delete temp;
     }
 
     void clear() {

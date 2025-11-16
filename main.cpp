@@ -41,6 +41,8 @@ int main() {
     InvertedIndexHashTable globalIndex;
     buildInvertedIndex(allFiles, globalIndex);
 
+    SearchHistory searchHistory; 
+
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> duration = end - start;
     string preprocTime =  "Total pre-processing Time (cleaning, tokenization, inverted index building): " + to_string(duration.count()) + " seconds...";
@@ -73,6 +75,20 @@ int main() {
     subtitleText.setFillColor(textColor);
     subtitleText.setPosition({windowCenter.x-100.f, 240.f});
 
+    RectangleShape sepLine1({600.f, 2.f});
+    sepLine1.setPosition({600.f, 500.f});
+    sepLine1.setFillColor(buttonBorderColor);
+    
+    RectangleShape topBar({1800.f, 40.f});
+    topBar.setPosition({0.f, 0.f});
+    topBar.setFillColor(buttonColor);
+    topBar.setOutlineThickness(1);
+    topBar.setOutlineColor(buttonBorderColor);
+
+    Text footerText(font, "boogle - copyright 1995", 14);
+    footerText.setFillColor(textColor);
+    footerText.setPosition({700.f, 520.f});
+    
     RectangleShape button1({220.f, 60.f});
     button1.setPosition({600.f, 400.f});
     button1.setOrigin(button1.getGeometricCenter());
@@ -154,10 +170,15 @@ int main() {
     searchButtonText.setPosition({1095.f, 345.f});
 
     RectangleShape searchResultsBox({1600.f, 400.f});
-    searchResultsBox.setPosition({100.f, 450.f});
+    searchResultsBox.setPosition({100.f, 400.f});
     searchResultsBox.setFillColor(Color::White);
     searchResultsBox.setOutlineThickness(2);
     searchResultsBox.setOutlineColor(buttonBorderColor);
+
+    Text searchHeader(font, "Web Search", 24);
+    searchHeader.setFillColor(titleColor);
+    searchHeader.setStyle(Text::Bold);
+    searchHeader.setPosition({100.f, 320.f});
 
     // Scrollbar for search results
     RectangleShape searchScrollbar({15.f, 50.f});
@@ -172,6 +193,42 @@ int main() {
     Text searchPrompt(font, "Enter search term:", 18);
     searchPrompt.setFillColor(textColor);
     searchPrompt.setPosition({600.f, 320.f});
+
+    //history screen
+    Text historyHeader(font, "Search History", 24);
+    historyHeader.setFillColor(titleColor);
+    historyHeader.setStyle(Text::Bold);
+    historyHeader.setPosition({100.f, 150.f});
+
+    RectangleShape historyBox({1600.f, 500.f});
+    historyBox.setPosition({100.f, 200.f});
+    historyBox.setFillColor(Color::White);
+    historyBox.setOutlineThickness(2);
+    historyBox.setOutlineColor(buttonBorderColor);
+
+    RectangleShape clearAllHistoryButton({160.f, 30.f});
+    clearAllHistoryButton.setPosition({1200.f, 750.f});
+    clearAllHistoryButton.setOrigin(clearAllHistoryButton.getGeometricCenter());
+    clearAllHistoryButton.setFillColor(buttonColor);
+    clearAllHistoryButton.setOutlineThickness(2);
+    clearAllHistoryButton.setOutlineColor(buttonBorderColor);
+
+    Text clearAllHistoryButtonText(font, "CLEAR ALL HISTORY", 14);
+    clearAllHistoryButtonText.setFillColor(textColor);
+    clearAllHistoryButtonText.setStyle(Text::Bold);
+    clearAllHistoryButtonText.setPosition({1110.f, 750.f});
+
+    RectangleShape clearRecentHistoryButton({160.f, 30.f});
+    clearRecentHistoryButton.setPosition({900.f, 750.f});
+    clearRecentHistoryButton.setOrigin(clearRecentHistoryButton.getGeometricCenter());
+    clearRecentHistoryButton.setFillColor(buttonColor);
+    clearRecentHistoryButton.setOutlineThickness(2);
+    clearRecentHistoryButton.setOutlineColor(buttonBorderColor);
+
+    Text clearRecentHistoryButtonText(font, "CLEAR MOST RECENT HISTORY", 14);
+    clearRecentHistoryButtonText.setFillColor(textColor);
+    clearRecentHistoryButtonText.setStyle(Text::Bold);
+    clearRecentHistoryButtonText.setPosition({810.f, 750.f});
 
     // N Ranked screen
     RectangleShape fileInputBox({200.f, 35.f});
@@ -217,6 +274,11 @@ int main() {
     rankedScrollbar.setFillColor(Color(128, 128, 128, 180));
     rankedScrollbar.setOutlineThickness(1);
     rankedScrollbar.setOutlineColor(Color::Black);
+
+    Text rankedHeader(font, "Top Ranked Words", 24);
+    rankedHeader.setFillColor(titleColor);
+    rankedHeader.setStyle(Text::Bold);
+    rankedHeader.setPosition({100.f, 150.f});
 
     Text filePrompt(font, "File number (1-" + to_string(allFiles.size()) + "):", 16);
     filePrompt.setFillColor(textColor);
@@ -336,6 +398,9 @@ int main() {
                         currentScreen = Screen::MAIN;
                         currentInput = "";
                         searchScrollOffset = 0.f;
+                    } else if  (searchBox.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {//input box click
+                        searchResults.clear();
+                        currentInput.clear();
                     } 
                     else if (searchButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) { //search button
                         cout << "Search button clicked!" << endl;
@@ -349,6 +414,9 @@ int main() {
                             searchResults.pushback(string("No results found for '") + currentInput + string("'"));
                         }
                         else {
+                            // ADD THIS LINE to record the search in history
+                            searchHistory.push(currentInput);
+                            
                             for (int i = 0; i < results.size(); ++i) {
                                 string line = to_string(i + 1) + ". " + results[i].filename + " (" + to_string(results[i].frequency) + " occurrences)";
                                 searchResults.pushback(line);
@@ -371,15 +439,39 @@ int main() {
 
             else if (currentScreen == Screen::HISTORY) { 
                 backButton.setFillColor(buttonColor);
-                if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {//hover for button
+                clearAllHistoryButton.setFillColor(buttonColor);
+                clearRecentHistoryButton.setFillColor(buttonColor);
+
+                // Hover effects
+                if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                     backButton.setFillColor(buttonHoverColor);
                     backButton.setPosition({98.f, 98.f});
                 } 
                 else{ backButton.setPosition({100.f, 100.f});}
+                
+                if (clearAllHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    clearAllHistoryButton.setFillColor(buttonHoverColor);
+                    clearAllHistoryButton.setPosition({1198.f, 748.f});
+                } 
+                else{ clearAllHistoryButton.setPosition({1200.f, 750.f});}
+                
+                if (clearRecentHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    clearRecentHistoryButton.setFillColor(buttonHoverColor);
+                    clearRecentHistoryButton.setPosition({898.f, 748.f});
+                } 
+                else{ clearRecentHistoryButton.setPosition({900.f, 750.f});}
 
-                if (event->is<Event::MouseButtonPressed>()) { //if mouse button pressed
-                    if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {//is back button pressed?
+                if (event->is<Event::MouseButtonPressed>()) {
+                    if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
                         currentScreen = Screen::MAIN;
+                    }
+                    else if (clearAllHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                        searchHistory.clear();
+                    }
+                    else if (clearRecentHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                        if (searchHistory.peek() != nullptr) {
+                            searchHistory.pop();
+                        }
                     }
                 }
             }
@@ -504,11 +596,6 @@ int main() {
         //RENDERING (basically drawing everything)
         window1.clear(bgColor);
         if (currentScreen == Screen::MAIN) {
-            RectangleShape topBar({1800.f, 40.f});
-            topBar.setPosition({0.f, 0.f});
-            topBar.setFillColor(buttonColor);
-            topBar.setOutlineThickness(1);
-            topBar.setOutlineColor(buttonBorderColor);
             window1.draw(topBar);
 
             window1.draw(titleText);
@@ -521,15 +608,7 @@ int main() {
             window1.draw(button3Text);
             window1.draw(statusBar);
             window1.draw(preprocTimeText);
-
-            RectangleShape sepLine1({600.f, 2.f});
-            sepLine1.setPosition({600.f, 500.f});
-            sepLine1.setFillColor(buttonBorderColor);
             window1.draw(sepLine1);
-
-            Text footerText(font, "boogle - copyright 1995", 14);
-            footerText.setFillColor(textColor);
-            footerText.setPosition({700.f, 520.f});
             window1.draw(footerText);
         }
         else {
@@ -570,37 +649,39 @@ int main() {
                     y += 25.f;
                     if (y > 830.f) break;
                 }
-
-                Text searchHeader(font, "Web Search", 24);
-                searchHeader.setFillColor(titleColor);
-                searchHeader.setStyle(Text::Bold);
-                searchHeader.setPosition({100.f, 320.f});
                 window1.draw(searchHeader);
             }
             else if (currentScreen == Screen::HISTORY) {
-                Text historyHeader(font, "Search History", 24);
-                historyHeader.setFillColor(titleColor);
-                historyHeader.setStyle(Text::Bold);
-                historyHeader.setPosition({100.f, 150.f});
                 window1.draw(historyHeader);
-
-                RectangleShape historyBox({1600.f, 500.f});
-                historyBox.setPosition({100.f, 200.f});
-                historyBox.setFillColor(Color::White);
-                historyBox.setOutlineThickness(2);
-                historyBox.setOutlineColor(buttonBorderColor);
                 window1.draw(historyBox);
+                window1.draw(clearAllHistoryButton);
+                window1.draw(clearAllHistoryButtonText);
+                window1.draw(clearRecentHistoryButton);
+                window1.draw(clearRecentHistoryButtonText);
+                float y = 220.f;
+                SearchHistoryNode* current = searchHistory.peek();
+                int count = 1;
+                
+                while (current != nullptr && y <= 680.f) {
+                    string historyEntry = to_string(count) + ". " + current->query;
+                    Text historyItem(font, historyEntry, 16);
+                    historyItem.setFillColor(Color::Black);
+                    historyItem.setPosition({120.f, y});
+                    window1.draw(historyItem);
+                    
+                    current = current->next;
+                    y += 25.f;
+                    count++;
+                }
 
-                Text historyText(font, "trying =(", 18);
-                historyText.setFillColor(textColor);
-                historyText.setPosition({200.f, 400.f});
-                window1.draw(historyText);
+                if (searchHistory.peek() == nullptr) {
+                    Text noHistoryText(font, "No search history yet", 18);
+                    noHistoryText.setFillColor(textColor);
+                    noHistoryText.setPosition({200.f, 400.f});
+                    window1.draw(noHistoryText);
+                }
             }
             else if (currentScreen == Screen::RANKED) {
-                Text rankedHeader(font, "Top Ranked Words", 24);
-                rankedHeader.setFillColor(titleColor);
-                rankedHeader.setStyle(Text::Bold);
-                rankedHeader.setPosition({100.f, 150.f});
                 window1.draw(rankedHeader);
 
                 // Update input text displays
