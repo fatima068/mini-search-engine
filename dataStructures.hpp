@@ -4,8 +4,6 @@
 #include <iostream>
 #include <cstdlib>
 using namespace std;
-// #include <cstring>
-// #include <string>
 
 template <typename T>
 class safeArray {
@@ -33,6 +31,12 @@ class safeArray {
         dynamicArray = newArray;
         ncols++;
     } // add resize function instead of copying everytime 
+
+    void clear() {
+        delete[] dynamicArray;
+        dynamicArray = nullptr;
+        ncols = 0;
+    }
 
     ~safeArray (){
         delete [] dynamicArray;
@@ -518,3 +522,4 @@ class SearchHistory { // history stack
     }
 };
 #endif
+    
