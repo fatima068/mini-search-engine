@@ -73,18 +73,6 @@ void buildInvertedIndex(safeArray<FileData>& allFiles, InvertedIndexHashTable& g
     cout << endl<< "built global inverted index" << endl;
 }
 
-void displayResults(const safeArray<FileNode>& results, const string& query) {
-    if (results.size() == 0) {
-        cout << "no results found for '" <<query << "'\n";
-        return;
-    }
-
-    cout << "\nResults for '" <<query << "':\n";
-    for (int i = 0; i < results.size(); i++) {
-        cout << i + 1 << ". " << results[i].filename <<": "<< results[i].frequency <<" occurrences" <<endl;
-    }
-}
-
 void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<int> &freqs) { // input n and file, then display top n word in that file
     cout << "\ntop " <<n << " words in file: " << file.filename << endl;
 
@@ -117,15 +105,60 @@ void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<
     }
 }
 
-safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const string& query){ //search a word and return sorted array of results
+safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const string& query) { //take inverted index & query and return array of results
     safeArray<FileNode> results;
-    FileNode* resultList = globalIndex.search(query);
+    safeArray<string> queryWords; //tokenize query
+    stringstream ss(query);
+    string word;
+    while (ss>>word) { queryWords.pushback(word);}
+    // if (queryWords.size() == 0) { return results; }
     
-    while (resultList != nullptr) {
-        results.pushback(*resultList);
-        resultList = resultList->next;
+    struct EnhancedFileNode {
+        string filename;
+        int matchCount;
+        int totalFrequency;
+        int searchScore;  //matchCount*10000 + totalfrequency
+    };
+    
+    safeArray<EnhancedFileNode> enhancedResults;
+        for (int i = 0; i < queryWords.size(); i++) {
+        FileNode* wordResults = globalIndex.search(queryWords[i]);
+        FileNode* current = wordResults;
+        
+        while (current != nullptr) {
+            //new entry if file doesnt already exist in results
+            bool found = false;
+            for (int j = 0; j < enhancedResults.size(); j++) {
+                if (enhancedResults[j].filename == current->filename) {
+                    enhancedResults[j].matchCount++;
+                    enhancedResults[j].totalFrequency += current->frequency;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                EnhancedFileNode newFile;
+                newFile.filename = current->filename;
+                newFile.matchCount = 1;
+                newFile.totalFrequency = current->frequency;
+                enhancedResults.pushback(newFile);
+            }
+            current = current->next;
+        }
     }
-    // Sort results by frequency (descending)
+    
+    for (int i = 0; i < enhancedResults.size(); i++) {
+        //files with more matching words at the top, then sort by total frequency
+        enhancedResults[i].searchScore = enhancedResults[i].matchCount * 10000 + enhancedResults[i].totalFrequency;
+        
+        FileNode result;
+        result.filename = enhancedResults[i].filename;
+        result.frequency = enhancedResults[i].searchScore; //score for sorting
+        result.next = nullptr;
+        results.pushback(result);
+    }
+    
+    //sorting by search score -descending order
     for (int i = 0; i < results.size() - 1; i++) {
         int maxIndex = i;
         for (int j = i + 1; j < results.size(); j++) {

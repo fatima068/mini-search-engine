@@ -412,13 +412,17 @@ int main() {
                         } 
                         else if (results.size() == 0) {
                             searchResults.pushback(string("No results found for '") + currentInput + string("'"));
+                            searchHistory.push(currentInput);
                         }
                         else {
-                            // ADD THIS LINE to record the search in history
                             searchHistory.push(currentInput);
                             
                             for (int i = 0; i < results.size(); ++i) {
-                                string line = to_string(i + 1) + ". " + results[i].filename + " (" + to_string(results[i].frequency) + " occurrences)";
+                                int matchCount = results[i].frequency / 10000;
+                                int actualFrequency = results[i].frequency % 10000;
+                                string line = to_string(i + 1) + ". " + results[i].filename + 
+                                            " (" + to_string(matchCount) + " words matched, " + 
+                                            to_string(actualFrequency) + " occurrences)";
                                 searchResults.pushback(line);
                             }
                         }
