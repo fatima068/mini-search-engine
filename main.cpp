@@ -3,6 +3,7 @@
 #include <chrono>
 #include "functions.hpp"
 #include "dataStructures.hpp"
+#include "customUI.hpp"
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -88,54 +89,11 @@ int main() {
     Text footerText(font, "boogle - copyright 1995", 14);
     footerText.setFillColor(textColor);
     footerText.setPosition({700.f, 520.f});
-    
-    RectangleShape button1({220.f, 60.f});
-    button1.setPosition({600.f, 400.f});
-    button1.setOrigin(button1.getGeometricCenter());
-    button1.setFillColor(buttonColor);
-    button1.setOutlineThickness(2);
-    button1.setOutlineColor(buttonBorderColor);
 
-    Text button1Text(font, "Search Word", 18);
-    button1Text.setFillColor(textColor);
-    button1Text.setStyle(Text::Bold);
-    button1Text.setPosition({560.f, 390.f});
-
-    RectangleShape button2({220.f, 60.f});
-    button2.setPosition({900.f, 400.f});
-    button2.setOrigin(button2.getGeometricCenter());
-    button2.setFillColor(buttonColor);
-    button2.setOutlineThickness(2);
-    button2.setOutlineColor(buttonBorderColor);
-
-    Text button2Text(font, "View Search History", 18);
-    button2Text.setFillColor(textColor);
-    button2Text.setStyle(Text::Bold);
-    button2Text.setPosition({800.f, 390.f});
-
-    RectangleShape button3({220.f, 60.f});
-    button3.setPosition({1200.f, 400.f});
-    button3.setOrigin(button3.getGeometricCenter());
-    button3.setFillColor(buttonColor);
-    button3.setOutlineThickness(2);
-    button3.setOutlineColor(buttonBorderColor);
-
-    Text button3Text(font, "Top N Ranked Words", 18);
-    button3Text.setFillColor(textColor);
-    button3Text.setStyle(Text::Bold);
-    button3Text.setPosition({1100.f, 390.f});
-
-    RectangleShape backButton({80.f, 30.f});
-    backButton.setPosition({100.f, 100.f});
-    backButton.setOrigin(backButton.getGeometricCenter());
-    backButton.setFillColor(buttonColor);
-    backButton.setOutlineThickness(2);
-    backButton.setOutlineColor(buttonBorderColor);
-
-    Text backButtonText(font, "BACK", 14);
-    backButtonText.setFillColor(textColor);
-    backButtonText.setStyle(Text::Bold);
-    backButtonText.setPosition({75.f, 95.f});
+    Button button1(font, "Search Word", {600.f, 400.f}, {220.f, 60.f}, buttonBorderColor, textColor);
+    Button button2(font, "View Search History", {900.f, 400.f}, {220.f, 60.f}, buttonBorderColor, textColor);
+    Button button3(font, "Top N Ranked Words", {1200.f, 400.f}, {220.f, 60.f}, buttonBorderColor, textColor);
+    Button backButton(font, "BACK", {100.f, 100.f}, {80.f, 30.f}, buttonBorderColor, textColor);
 
     RectangleShape statusBar({1800.f, 30.f});
     statusBar.setPosition({0.f, 800.f});
@@ -157,17 +115,7 @@ int main() {
     inputTextSearchPg.setFillColor(Color::Black);
     inputTextSearchPg.setPosition({610.f, 355.f});
 
-    RectangleShape searchButton({80.f, 35.f}); 
-    searchButton.setPosition({1120.f, 350.f});
-    searchButton.setOrigin(searchButton.getGeometricCenter());
-    searchButton.setFillColor(buttonColor);
-    searchButton.setOutlineThickness(2);
-    searchButton.setOutlineColor(buttonBorderColor);
-
-    Text searchButtonText(font, "SEARCH", 14);
-    searchButtonText.setFillColor(textColor);
-    searchButtonText.setStyle(Text::Bold);
-    searchButtonText.setPosition({1095.f, 345.f});
+    Button searchButton(font, "SEARCH", {1120.f, 350.f}, {80.f, 35.f}, buttonBorderColor, textColor);
 
     RectangleShape searchResultsBox({1600.f, 400.f});
     searchResultsBox.setPosition({100.f, 400.f});
@@ -206,29 +154,8 @@ int main() {
     historyBox.setOutlineThickness(2);
     historyBox.setOutlineColor(buttonBorderColor);
 
-    RectangleShape clearAllHistoryButton({160.f, 30.f});
-    clearAllHistoryButton.setPosition({1200.f, 750.f});
-    clearAllHistoryButton.setOrigin(clearAllHistoryButton.getGeometricCenter());
-    clearAllHistoryButton.setFillColor(buttonColor);
-    clearAllHistoryButton.setOutlineThickness(2);
-    clearAllHistoryButton.setOutlineColor(buttonBorderColor);
-
-    Text clearAllHistoryButtonText(font, "CLEAR ALL HISTORY", 14);
-    clearAllHistoryButtonText.setFillColor(textColor);
-    clearAllHistoryButtonText.setStyle(Text::Bold);
-    clearAllHistoryButtonText.setPosition({1110.f, 750.f});
-
-    RectangleShape clearRecentHistoryButton({160.f, 30.f});
-    clearRecentHistoryButton.setPosition({900.f, 750.f});
-    clearRecentHistoryButton.setOrigin(clearRecentHistoryButton.getGeometricCenter());
-    clearRecentHistoryButton.setFillColor(buttonColor);
-    clearRecentHistoryButton.setOutlineThickness(2);
-    clearRecentHistoryButton.setOutlineColor(buttonBorderColor);
-
-    Text clearRecentHistoryButtonText(font, "CLEAR MOST RECENT HISTORY", 14);
-    clearRecentHistoryButtonText.setFillColor(textColor);
-    clearRecentHistoryButtonText.setStyle(Text::Bold);
-    clearRecentHistoryButtonText.setPosition({810.f, 750.f});
+    Button clearAllHistoryButton(font, "CLEAR ALL HISTORY", {1200.f, 750.f}, {160.f, 30.f}, buttonBorderColor, textColor);
+    Button clearRecentHistoryButton(font, "CLEAR MOST RECENT HISTORY", {900.f, 750.f}, {160.f, 30.f}, buttonBorderColor, textColor);
 
     // N Ranked screen
     RectangleShape fileInputBox({200.f, 35.f});
@@ -251,17 +178,7 @@ int main() {
     nInputText.setFillColor(Color::Black);
     nInputText.setPosition({910.f, 305.f});
 
-    RectangleShape rankedSearchButton({120.f, 35.f});
-    rankedSearchButton.setPosition({1150.f, 300.f});
-    rankedSearchButton.setOrigin(rankedSearchButton.getGeometricCenter());
-    rankedSearchButton.setFillColor(buttonColor);
-    rankedSearchButton.setOutlineThickness(2);
-    rankedSearchButton.setOutlineColor(buttonBorderColor);
-
-    Text rankedSearchButtonText(font, "GET WORDS", 14);
-    rankedSearchButtonText.setFillColor(textColor);
-    rankedSearchButtonText.setStyle(Text::Bold);
-    rankedSearchButtonText.setPosition({1120.f, 295.f});
+    Button rankedSearchButton(font, "GET WORDS", {1150.f, 300.f}, {120.f, 35.f}, buttonBorderColor, textColor);
 
     RectangleShape rankedResultsBox({1600.f, 430.f});
     rankedResultsBox.setPosition({100.f, 350.f});
@@ -316,43 +233,32 @@ int main() {
             Vector2i mousePos = Mouse::getPosition(window1);
 
             if (currentScreen == Screen::MAIN) {
-                button1.setFillColor(buttonColor);
-                button2.setFillColor(buttonColor);
-                button3.setFillColor(buttonColor);
+                if (button1.contains(mousePos)){
+                    button1.setHovered(true);
+                } else button1.setHovered(false);
 
-                // Hover effects
-                if (button1.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    button1.setFillColor(buttonHoverColor);
-                    button1.setPosition({598.f, 398.f});
-                } 
-                else { button1.setPosition({600.f, 400.f}); }
+                if(button2.contains(mousePos)){
+                    button2.setHovered(true);
+                } else button2.setHovered(false);
 
-                if (button2.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    button2.setFillColor(buttonHoverColor);
-                    button2.setPosition({898.f, 398.f});
-                } 
-                else { button2.setPosition({900.f, 400.f}); }
-                
-                if (button3.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    button3.setFillColor(buttonHoverColor);
-                    button3.setPosition({1198.f, 398.f});
-                } 
-                else { button3.setPosition({1200.f, 400.f}); }
+                if (button3.contains(mousePos)){
+                    button3.setHovered(true);
+                } else button3.setHovered(false);
 
                 //check if any of the three homescreen buttons is clicked
                 if (event->is<Event::MouseButtonPressed>()) {
-                    if (button1.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    if (button1.contains(mousePos)) {
                         cout << "Search Word button clicked!" << endl;
                         currentScreen = Screen::SEARCH;
                         currentInput = "";
                         searchResults.clear();
                         searchScrollOffset = 0.f; // Reset scroll when switching to search
                     } 
-                    else if (button2.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    else if (button2.contains(mousePos)) {
                         cout << "View History button clicked!" << endl;
                         currentScreen = Screen::HISTORY;
                     } 
-                    else if (button3.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    else if (button3.contains(mousePos)) {
                         cout << "N Ranked Words button clicked!" << endl;
                         currentScreen = Screen::RANKED;
                         // Reset ranked screen state
@@ -367,21 +273,14 @@ int main() {
             } 
             
             else if (currentScreen == Screen::SEARCH){
-                backButton.setFillColor(buttonColor);
-                searchButton.setFillColor(buttonColor);
+                if(backButton.contains(mousePos)) {
+                    backButton.setHovered(true);
+                } else backButton.setHovered(false);
                 
-                // Hover effects
-                if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    backButton.setFillColor(buttonHoverColor);
-                    backButton.setPosition({98.f, 98.f});
+                if (searchButton.contains(mousePos)) {
+                    searchButton.setHovered(true);
                 } 
-                else {backButton.setPosition({100.f, 100.f}); }
-                
-                if (searchButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    searchButton.setFillColor(buttonHoverColor);
-                    searchButton.setPosition({1118.f, 348.f});
-                } 
-                else { searchButton.setPosition({1120.f, 350.f});}
+                else { searchButton.setHovered(false);}
 
                  //scroll events
                 if (const auto* wheelEvent = event->getIf<Event::MouseWheelScrolled>()) {
@@ -394,7 +293,7 @@ int main() {
                 }
 
                 if (event->is<Event::MouseButtonPressed>()) {// if mouse button pressed, check if back button pressed or search button 
-                    if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) { //back button
+                    if (backButton.contains(mousePos)) { //back button
                         currentScreen = Screen::MAIN;
                         currentInput = "";
                         searchScrollOffset = 0.f;
@@ -402,7 +301,7 @@ int main() {
                         searchResults.clear();
                         currentInput.clear();
                     } 
-                    else if (searchButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) { //search button
+                    else if (searchButton.contains(mousePos)) { //search button
                         cout << "Search button clicked!" << endl;
                         safeArray<FileNode> results = performSearch(globalIndex, currentInput);
                         searchResults.clear();
@@ -429,6 +328,35 @@ int main() {
                         searchScrollOffset = 0.f; // Reset scroll when new search is performed
                     }  
                 }
+                else if (const auto* keyEvent = event->getIf<Event::KeyPressed>()) {
+                    if (keyEvent->code == Keyboard::Key::Enter) {
+                        // Perform the same search as when clicking the search button
+                        cout << "Enter key pressed for search!" << endl;
+                        safeArray<FileNode> results = performSearch(globalIndex, currentInput);
+                        searchResults.clear();
+
+                        if (currentInput.empty()) {
+                            searchResults.pushback("Please enter a search term");
+                        } 
+                        else if (results.size() == 0) {
+                            searchResults.pushback(string("No results found for '") + currentInput + string("'"));
+                            searchHistory.push(currentInput);
+                        }
+                        else {
+                            searchHistory.push(currentInput);
+                            
+                            for (int i = 0; i < results.size(); ++i) {
+                                int matchCount = results[i].frequency / 10000;
+                                int actualFrequency = results[i].frequency % 10000;
+                                string line = to_string(i + 1) + ". " + results[i].filename + 
+                                            " (" + to_string(matchCount) + " words matched, " + 
+                                            to_string(actualFrequency) + " occurrences)";
+                                searchResults.pushback(line);
+                            }
+                        }
+                        searchScrollOffset = 0.f;
+                    }
+                }
                 else if (const auto* textEvent = event->getIf<Event::TextEntered>()) { //if text is entered
                     char entered = static_cast<char>(textEvent->unicode);
 
@@ -442,37 +370,26 @@ int main() {
             }
 
             else if (currentScreen == Screen::HISTORY) { 
-                backButton.setFillColor(buttonColor);
-                clearAllHistoryButton.setFillColor(buttonColor);
-                clearRecentHistoryButton.setFillColor(buttonColor);
+                if(backButton.contains(mousePos)) {
+                    backButton.setHovered(true);
+                } else backButton.setHovered(false);
 
-                // Hover effects
-                if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    backButton.setFillColor(buttonHoverColor);
-                    backButton.setPosition({98.f, 98.f});
-                } 
-                else{ backButton.setPosition({100.f, 100.f});}
+                if(clearAllHistoryButton.contains(mousePos)) {
+                    clearAllHistoryButton.setHovered(true);
+                } else clearAllHistoryButton.setHovered(false);
                 
-                if (clearAllHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    clearAllHistoryButton.setFillColor(buttonHoverColor);
-                    clearAllHistoryButton.setPosition({1198.f, 748.f});
-                } 
-                else{ clearAllHistoryButton.setPosition({1200.f, 750.f});}
-                
-                if (clearRecentHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    clearRecentHistoryButton.setFillColor(buttonHoverColor);
-                    clearRecentHistoryButton.setPosition({898.f, 748.f});
-                } 
-                else{ clearRecentHistoryButton.setPosition({900.f, 750.f});}
+                if (clearRecentHistoryButton.contains(mousePos)) {
+                    clearRecentHistoryButton.setHovered(true);
+                } else clearRecentHistoryButton.setHovered(false);
 
                 if (event->is<Event::MouseButtonPressed>()) {
-                    if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    if (backButton.contains(mousePos)) { //back button
                         currentScreen = Screen::MAIN;
                     }
-                    else if (clearAllHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    else if (clearAllHistoryButton.contains(mousePos)) {
                         searchHistory.clear();
                     }
-                    else if (clearRecentHistoryButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
+                    else if (clearRecentHistoryButton.contains(mousePos)) {
                         if (searchHistory.peek() != nullptr) {
                             searchHistory.pop();
                         }
@@ -481,21 +398,13 @@ int main() {
             }
 
             else if (currentScreen == Screen::RANKED) {
-                backButton.setFillColor(buttonColor);
-                rankedSearchButton.setFillColor(buttonColor);
-                
-                // Hover effects
-                if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    backButton.setFillColor(buttonHoverColor);
-                    backButton.setPosition({98.f, 98.f});
-                } 
-                else {backButton.setPosition({100.f, 100.f});}
+                if(backButton.contains(mousePos)) {
+                    backButton.setHovered(true);
+                } else backButton.setHovered(false);
 
-                if (rankedSearchButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {
-                    rankedSearchButton.setFillColor(buttonHoverColor);
-                    rankedSearchButton.setPosition({1148.f, 298.f});
-                } 
-                else {rankedSearchButton.setPosition({1150.f, 300.f});}
+                if(rankedSearchButton.contains(mousePos)) {
+                    rankedSearchButton.setHovered(true);
+                } else rankedSearchButton.setHovered(false);
 
                 if (const auto* wheelEvent = event->getIf<Event::MouseWheelScrolled>()) {
                     if (wheelEvent->delta > 0) {
@@ -507,7 +416,7 @@ int main() {
                 }
 
                 if (event->is<Event::MouseButtonPressed>()) {
-                    if (backButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) {//back button
+                    if (backButton.contains(mousePos)) {//back button
                         currentScreen = Screen::MAIN;
                         rankedOutput.clear();
                         fileInput = "";
@@ -524,7 +433,7 @@ int main() {
                         clickedFilesBox = false;
                         rankedOutput.clear();
                     }
-                    else if (rankedSearchButton.getGlobalBounds().contains(Vector2f(mousePos.x, mousePos.y))) { //search button on n ranked wprds screen
+                    else if (rankedSearchButton.contains(mousePos)) { //search button on n ranked wprds screen
                         cout << "get words button clicked" << endl;
                         if (fileInput.empty() || nInput.empty()) {
                             rankedOutput.clear();
@@ -565,6 +474,44 @@ int main() {
                         clickedFilesBox = false;
                         clickedNBox = false;
                     }
+                } else if (const auto* keyEvent = event->getIf<Event::KeyPressed>()) {
+                    if (keyEvent->code == Keyboard::Key::Enter) {
+                        cout << "Enter key pressed for ranked words!" << endl;
+                        if (fileInput.empty() || nInput.empty()) {
+                            rankedOutput.clear();
+                            rankedOutput.pushback("Enter both file number and N(num of words u want to view)");
+                        }
+                        else {
+                            try {
+                                fileN = stoi(fileInput);
+                                Nwords = stoi(nInput);
+                                
+                                if (fileN < 1 || fileN > allFiles.size()) {
+                                    rankedOutput.clear();
+                                    rankedOutput.pushback("File number must be between 1 and " + to_string(allFiles.size()));
+                                } else if(Nwords < 1){
+                                    rankedOutput.clear();
+                                    rankedOutput.pushback("enter N > 0");
+                                }else {
+                                    cout << "File: " << fileN << ", N: " << Nwords << endl;
+                                    int fileIndex = fileN - 1;
+                                    safeArray<string> words;
+                                    safeArray<int> freqs;
+                                    displayTopWords(allFiles[fileIndex], Nwords, words, freqs);
+
+                                    rankedOutput.clear();
+                                    for (int i = 0; i < Nwords && i < freqs.size(); i++) {
+                                        string line = to_string(i + 1) + ". " + words[i] + " (" + to_string(freqs[i]) + ")";
+                                        rankedOutput.pushback(line);
+                                    }
+                                }
+                            }catch (...) {
+                                rankedOutput.clear();
+                                rankedOutput.pushback("invalid number entered");
+                            }
+                        }
+                        rankedScrollOffset = 0.f;
+                    }
                 }
 
                 //text input for file number box
@@ -604,20 +551,16 @@ int main() {
 
             window1.draw(titleText);
             window1.draw(subtitleText);
-            window1.draw(button1);
-            window1.draw(button2);
-            window1.draw(button3);
-            window1.draw(button1Text);
-            window1.draw(button2Text);
-            window1.draw(button3Text);
+            button1.draw(window1);
+            button2.draw(window1);
+            button3.draw(window1);
             window1.draw(statusBar);
             window1.draw(preprocTimeText);
             window1.draw(sepLine1);
             window1.draw(footerText);
         }
         else {
-            window1.draw(backButton);
-            window1.draw(backButtonText);
+            backButton.draw(window1);
             
             if (currentScreen == Screen::SEARCH) {
                 string displayText = currentInput + '_';
@@ -625,8 +568,7 @@ int main() {
 
                 window1.draw(searchPrompt);
                 window1.draw(searchBox);
-                window1.draw(searchButton);
-                window1.draw(searchButtonText);
+                searchButton.draw(window1);
                 window1.draw(inputTextSearchPg);
                 window1.draw(searchResultsBox);
 
@@ -658,10 +600,8 @@ int main() {
             else if (currentScreen == Screen::HISTORY) {
                 window1.draw(historyHeader);
                 window1.draw(historyBox);
-                window1.draw(clearAllHistoryButton);
-                window1.draw(clearAllHistoryButtonText);
-                window1.draw(clearRecentHistoryButton);
-                window1.draw(clearRecentHistoryButtonText);
+                clearAllHistoryButton.draw(window1);
+                clearRecentHistoryButton.draw(window1);
                 float y = 220.f;
                 SearchHistoryNode* current = searchHistory.peek();
                 int count = 1;
@@ -701,8 +641,7 @@ int main() {
                 window1.draw(nPrompt);
                 window1.draw(nInputBox);
                 window1.draw(nInputText);
-                window1.draw(rankedSearchButton);
-                window1.draw(rankedSearchButtonText);
+                rankedSearchButton.draw(window1);
                 window1.draw(rankedResultsBox);
 
                 float rankedContentHeight = static_cast<float>(rankedOutput.size()) * 25.f;
