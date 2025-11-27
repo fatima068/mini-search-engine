@@ -9,9 +9,8 @@
 using namespace sf;
 using namespace std;
 
-<<<<<<< HEAD
 class ScrollablePanel {
-private:
+    private:
     RectangleShape container;
     RectangleShape scrollbar;
     safeArray<string> content;
@@ -19,7 +18,7 @@ private:
     float lineHeight;
     Font& font;
 
-public:
+    public:
     ScrollablePanel(Font& fontRef, Vector2f position, Vector2f size, float lineH = 25.f) :font(fontRef), scrollOffset(0.f), lineHeight(lineH) {
         container.setSize(size);
         container.setPosition(position);
@@ -63,7 +62,7 @@ public:
     float getScrollOffset() const { return scrollOffset; }
     void setScrollOffset(float offset) { scrollOffset = offset; }
 
-private:
+    private:
     float getContentHeight() const {
         return content.size() * lineHeight;
     }
@@ -154,8 +153,6 @@ public:
     }
 };
 
-=======
->>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
 class InputBox {
 private:
     RectangleShape box;
@@ -181,16 +178,10 @@ public:
         text.setPosition({boxPosition.x + 5, boxPosition.y + 5});
     }
 
-<<<<<<< HEAD
     Vector2f getSize() const { return box.getSize(); }
 
     void handleEvent(const Event& event, Vector2f mousePos) {
         if (event.is<Event::MouseButtonPressed>()) {    
-=======
-    void handleEvent(const Event& event, Vector2f mousePos) {
-        // Use pattern matching for SFML 3.0
-        if (event.is<Event::MouseButtonPressed>()) {
->>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
             bool wasActive = isActive;
             isActive = box.getGlobalBounds().contains(mousePos);
             box.setOutlineColor(isActive ? Color::Blue : Color(128, 128, 128));
@@ -207,7 +198,6 @@ public:
             handleTextInput(textEvent->unicode);
         }
     }
-<<<<<<< HEAD
 
     void handleEvent(const Event& event, Vector2f mousePos, SuggestionBox &searchSuggestionBox, safeArray<string> &suggestionList, Trie &trie) {
     if (event.is<Event::MouseButtonPressed>()) {    
@@ -251,8 +241,6 @@ public:
             searchSuggestionBox.hide();
     }
 }
-=======
->>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
     
     string getText()const { return content; }
     void setText(const string& newText) { content = newText; updateDisplayText(); }
@@ -262,11 +250,7 @@ public:
     void draw(RenderWindow& window) {
         window.draw(box);
         
-<<<<<<< HEAD
-        if (isActive && cursorClock.getElapsedTime().asSeconds() > 0.5f) { //cursor blinking
-=======
         if (isActive && cursorClock.getElapsedTime().asSeconds() > 0.5f) {//cursor blinking
->>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
             cursorVisible = !cursorVisible;
             cursorClock.restart();
         }        
@@ -277,7 +261,7 @@ public:
 
     Vector2f getPosition() const { return box.getPosition(); }
 
-private:
+    private:
     void handleTextInput(uint32_t unicode) {
         if (unicode == 8 && !content.empty()) { // Backspace
             content.pop_back();
