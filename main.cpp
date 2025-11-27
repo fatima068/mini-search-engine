@@ -4,7 +4,6 @@
 #include "functions.hpp"
 #include "dataStructures.hpp"
 #include "customUI.hpp"
-#include "customUI.hpp"
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -15,12 +14,12 @@ using namespace std;
 
 int main() {
     SearchHistory searchHistory; 
-    SearchHistory searchHistory; 
     auto start = chrono::high_resolution_clock::now();
 
     safeArray<string> filenames = getAllTextFiles();
     safeArray<FileData> allFiles;
     cout << filenames.size() << " text files detected" << endl;
+
     for (int i = 0; i < filenames.size(); i++) {
         ifstream file(filenames[i]);
         if (!file) {
@@ -31,9 +30,10 @@ int main() {
         currentFile.filename = filenames[i];
 
         string line;
-        int position = 0; 
+        int position = 0; //to track word positions in file
         while (getline(file, line)) {
             string cleaned = removePunctuation(line);
+            //tokenize and track positions
             stringstream ss(cleaned);
             string token;
             while (ss >> token) {
@@ -77,8 +77,6 @@ int main() {
     Color textColor(0, 0, 139); 
     Color titleColor(75, 0, 130); 
     
-    Vector2u windowSize = window1.getSize();
-    Vector2f windowCenter(windowSize.x / 2.f, windowSize.y / 2.f);
     Vector2u windowSize = window1.getSize();
     Vector2f windowCenter(windowSize.x / 2.f, windowSize.y / 2.f);
     
@@ -285,11 +283,11 @@ int main() {
                         string currentText = searchInputBox.getText();
                         size_t lastSpace = currentText.find_last_of(' ');
                         
-                        if (lastSpace != string::npos) { //replace only last word
+                        if (lastSpace != string::npos) {//replace only last word
                             string newText = currentText.substr(0, lastSpace + 1) + selectedSuggestion;
                             searchInputBox.setText(newText);
                         } 
-                        else { searchInputBox.setText(selectedSuggestion); } //no spaces so replace entire text
+                        else { searchInputBox.setText(selectedSuggestion); }//no spaces so replace entire text
                         
                         searchSuggestionBox.hide();
                     }
@@ -317,20 +315,14 @@ int main() {
                 backButton.setHovered(backButton.contains(mousePos));
                 clearAllHistoryButton.setHovered(clearAllHistoryButton.contains(mousePos));
                 clearRecentHistoryButton.setHovered(clearRecentHistoryButton.contains(mousePos));
-                backButton.setHovered(backButton.contains(mousePos));
-                clearAllHistoryButton.setHovered(clearAllHistoryButton.contains(mousePos));
-                clearRecentHistoryButton.setHovered(clearRecentHistoryButton.contains(mousePos));
 
                 if (event->is<Event::MouseButtonPressed>()) {
-                    if (backButton.contains(mousePos)) {
                     if (backButton.contains(mousePos)) {
                         currentScreen = Screen::MAIN;
                     }
                     else if (clearAllHistoryButton.contains(mousePos)) {
-                    else if (clearAllHistoryButton.contains(mousePos)) {
                         searchHistory.clear();
                     }
-                    else if (clearRecentHistoryButton.contains(mousePos)) {
                     else if (clearRecentHistoryButton.contains(mousePos)) {
                         if (searchHistory.peek() != nullptr) {
                             searchHistory.pop();
@@ -353,7 +345,6 @@ int main() {
                 }
 
                 if (event->is<Event::MouseButtonPressed>()) {
-                    if (backButton.contains(mousePos)) {
                     if (backButton.contains(mousePos)) {
                         currentScreen = Screen::MAIN;
                         rankedResultsPanel.setScrollOffset(0.f);
@@ -385,7 +376,6 @@ int main() {
         }
         else {
             backButton.draw(window1);
-            backButton.draw(window1);
             
             if (currentScreen == Screen::SEARCH) {
                 searchPrompt.draw(window1);
@@ -401,10 +391,7 @@ int main() {
             }
             else if (currentScreen == Screen::HISTORY) {
                 historyHeader.draw(window1);
-                historyHeader.draw(window1);
                 window1.draw(historyBox);
-                clearAllHistoryButton.draw(window1);
-                clearRecentHistoryButton.draw(window1);
                 clearAllHistoryButton.draw(window1);
                 clearRecentHistoryButton.draw(window1);
                 float y = 220.f;
@@ -415,8 +402,6 @@ int main() {
                     string historyEntry = to_string(count) + ". " + current->query;
                     myText historyItem(font, historyEntry, 16, {120.f, y}, Color::Black, Text::Regular);
                     historyItem.draw(window1);
-                    myText historyItem(font, historyEntry, 16, {120.f, y}, Color::Black, Text::Regular);
-                    historyItem.draw(window1);
                     
                     current = current->next;
                     y += 25.f;
@@ -424,8 +409,6 @@ int main() {
                 }
 
                 if (searchHistory.peek() == nullptr) {
-                    myText noHistoryText(font, "No search history yet", 18, {200.f, 400.f}, textColor, Text::Regular);
-                    noHistoryText.draw(window1);
                     myText noHistoryText(font, "No search history yet", 18, {200.f, 400.f}, textColor, Text::Regular);
                     noHistoryText.draw(window1);
                 }
