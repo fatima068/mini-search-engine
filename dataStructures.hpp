@@ -30,7 +30,7 @@ class safeArray {
         delete[] dynamicArray; 
         dynamicArray = newArray;
         ncols++;
-    } 
+    } // add resize function instead of copying everytime 
 
     void clear() {
         delete[] dynamicArray;
@@ -57,7 +57,7 @@ class safeArray {
         delete[] dynamicArray;
         dynamicArray = NULL;
         ncols = rhs.ncols;
-        dynamicArray = new T[ncols];
+            dynamicArray = new T[ncols];
         for(int i = 0; i < ncols; i++)
             dynamicArray[i] = rhs.dynamicArray[i];
 
@@ -79,7 +79,7 @@ class safeArray {
     }
 };
 
-struct HashNode { // for the hash table that is storing frequency of words in a file for each file 
+struct HashNode { // for the hash table which stores frequency of words in a file for each file 
     string word;
     int count;
     safeArray<int> positions; // word's positions in the file 
@@ -116,13 +116,13 @@ class HashTable {
     }
 
     HashTable(const HashTable &rhs) {
-        tableSize = rhs.tableSize; 
+        tableSize = rhs.tableSize; // self assignment
 
         table = new HashNode*[tableSize];
         for (int i = 0; i < tableSize; i++) {
             if (rhs.table[i] == nullptr) { // no collisions, next ptr is null, so move on to the next index
                 table[i] = nullptr;
-            } else { // the linked list is also a pointer so deep copy 
+            } else { // the linked list is also a pointer so deep copy
                 HashNode* currentSrc = rhs.table[i];
                 HashNode* currentDest = new HashNode(currentSrc->word, currentSrc->count);
 
@@ -149,7 +149,7 @@ class HashTable {
             }
         }
         delete[] table;
-        tableSize = rhs.tableSize; 
+        tableSize = rhs.tableSize; // allocate new table
         table = new HashNode*[tableSize];
 
         for (int i = 0; i < tableSize; i++) {
@@ -242,7 +242,7 @@ class HashTable {
     }
 };
 
-struct FileData { // is used to store data of each file
+struct FileData { // being used in functions.cpp to store data of each file
     string filename;
     safeArray<string> tokens;
     HashTable freqTable;
@@ -271,7 +271,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
     InvertedIndexTableNode** table;
     // table
     // ↓
-    // pointer → array of pointers → which each points to the head of a linked list of InvertedIndexTableNode
+    // pointer → array of pointers → each points to the head of a linked list of InvertedIndexTableNode
     // inside every InvertedIndexTableNode there is a linked list of FileNodes
 
     int hashFunction(const string& key) {
@@ -323,12 +323,12 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
 
                 srcWordNode = srcWordNode->next;
 
-                // Deep copy rest of the word nodes in the list
+                // Deep copy the rest of the word nodes in the chain
                 while (srcWordNode != nullptr) {
                     destWordNode->next = new InvertedIndexTableNode(srcWordNode->word);
                     destWordNode = destWordNode->next;
 
-                    // Copy file list for each next word
+                    // Copy file list for each subsequent word
                     if (srcWordNode->fileList != nullptr) {
                         FileNode* srcFileNode = srcWordNode->fileList;
                         FileNode* destFileNode = new FileNode(srcFileNode->filename, srcFileNode->frequency);
@@ -363,7 +363,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
                     delete tempFile;
                 }
 
-                // delete the node itself
+                // delete the word node itself
                 InvertedIndexTableNode* tempWord = wordNode;
                 wordNode = wordNode->next;
                 delete tempWord;
@@ -399,7 +399,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
 
                 srcWordNode = srcWordNode->next;
 
-                // Copy remaining word nodes in lsit
+                // Copy remaining word nodes in chain
                 while (srcWordNode != nullptr) {
                     destWordNode->next = new InvertedIndexTableNode(srcWordNode->word);
                     destWordNode = destWordNode->next;
@@ -442,7 +442,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
                     }
                     f = f->next;
                 }
-                // word not found, so add new
+                // if not found, add new file node
                 FileNode* newFile = new FileNode(filename, frequency);
                 newFile->next = current->fileList;
                 current->fileList = newFile;
@@ -460,7 +460,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
     }
 
 
-    FileNode* search(const string& word) { // will return a pointer to file list of given word
+    FileNode* search(const string& word) { // return pointer to file list of given word
         int index = hashFunction(word);
         InvertedIndexTableNode* current = table[index];
 
@@ -473,7 +473,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
         return nullptr;
     }
 
-    void display() { 
+    void display() {
         cout << "\n--GLOBAL INVERTED INDEX--" << endl;
         for (int i = 0; i < tableSize; i++) {
             InvertedIndexTableNode* current = table[i];
@@ -491,7 +491,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
     }
 };
 
-struct SearchHistoryNode { // linked list based stack for search history
+struct SearchHistoryNode { //linked list based stack for search history
     string query;
     SearchHistoryNode* next;
     SearchHistoryNode(string query) : query(query), next(nullptr) {}
@@ -607,7 +607,7 @@ class Trie {
         if (input.empty()) return result;
     
         string lastWord = input;
-        size_t lastSpace = input.find_last_of(' '); // extract last word only
+        size_t lastSpace = input.find_last_of(' ');//extract last word only
         if (lastSpace != string::npos) {
             lastWord = input.substr(lastSpace + 1);
         }
@@ -632,7 +632,7 @@ class Trie {
             }
             curr = curr->children[idx];
         }
-        dfs(curr, temp, result); // getting completions for last word
+        dfs(curr, temp, result); //getting completions for last word
         return result;
     }
 };
