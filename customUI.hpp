@@ -9,6 +9,7 @@
 using namespace sf;
 using namespace std;
 
+<<<<<<< HEAD
 class ScrollablePanel {
 private:
     RectangleShape container;
@@ -153,6 +154,8 @@ public:
     }
 };
 
+=======
+>>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
 class InputBox {
 private:
     RectangleShape box;
@@ -178,10 +181,16 @@ public:
         text.setPosition({boxPosition.x + 5, boxPosition.y + 5});
     }
 
+<<<<<<< HEAD
     Vector2f getSize() const { return box.getSize(); }
 
     void handleEvent(const Event& event, Vector2f mousePos) {
         if (event.is<Event::MouseButtonPressed>()) {    
+=======
+    void handleEvent(const Event& event, Vector2f mousePos) {
+        // Use pattern matching for SFML 3.0
+        if (event.is<Event::MouseButtonPressed>()) {
+>>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
             bool wasActive = isActive;
             isActive = box.getGlobalBounds().contains(mousePos);
             box.setOutlineColor(isActive ? Color::Blue : Color(128, 128, 128));
@@ -198,6 +207,7 @@ public:
             handleTextInput(textEvent->unicode);
         }
     }
+<<<<<<< HEAD
 
     void handleEvent(const Event& event, Vector2f mousePos, SuggestionBox &searchSuggestionBox, safeArray<string> &suggestionList, Trie &trie) {
     if (event.is<Event::MouseButtonPressed>()) {    
@@ -241,6 +251,8 @@ public:
             searchSuggestionBox.hide();
     }
 }
+=======
+>>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
     
     string getText()const { return content; }
     void setText(const string& newText) { content = newText; updateDisplayText(); }
@@ -250,7 +262,11 @@ public:
     void draw(RenderWindow& window) {
         window.draw(box);
         
+<<<<<<< HEAD
         if (isActive && cursorClock.getElapsedTime().asSeconds() > 0.5f) { //cursor blinking
+=======
+        if (isActive && cursorClock.getElapsedTime().asSeconds() > 0.5f) {//cursor blinking
+>>>>>>> 9b5f171b8de11aade31b6bc409587d57a9f8b95d
             cursorVisible = !cursorVisible;
             cursorClock.restart();
         }        
