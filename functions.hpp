@@ -18,7 +18,7 @@ const string stopWords[] = {
 
 const int numStopWords = sizeof(stopWords) / sizeof(stopWords[0]);
 
-safeArray<string> getAllTextFiles() { // returns aray of names of all txt files in the specified folder, to automate file reading and new files detection 
+safeArray<string> getAllTextFiles() { // returns aray of names of all txt files in the specified folder - to automate file reading and new files detection 
     safeArray<string> fileList;
     for (const auto& entry : fs::directory_iterator("textFiles")) {
         if (entry.path().extension() == ".txt") {
@@ -28,7 +28,7 @@ safeArray<string> getAllTextFiles() { // returns aray of names of all txt files 
     return fileList;
 }
 
-string removePunctuation(const string& line) { // read line from file, clean it and return
+string removePunctuation(const string& line) { // read line from file, clean it using removePunctuation() and return
     string cleaned;
     for (char ch : line) {
         if (!ispunct(ch)) {  
@@ -36,7 +36,7 @@ string removePunctuation(const string& line) { // read line from file, clean it 
         }
     }
     return cleaned;
-} 
+} // if the file has stuff like don’t or it’s, we want to keep the apostrophe but this function isnt doing that, consider it if time left end mei 
 
 bool isStopWord(const string& word) {
     for (int i = 0; i < numStopWords; i++) {
@@ -76,7 +76,7 @@ void buildInvertedIndex(safeArray<FileData>& allFiles, InvertedIndexHashTable& g
 void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<int> &freqs) { // input n and file, then display top n word in that file
     cout << "\ntop " <<n << " words in file: " << file.filename << endl;
 
-    //Extract all word, frequency pairs into arrays for sorting because sorting is easier on arrays
+    //Extract all (word, frequency) pairs into arrays for sorting because sorting is easier on arrays
     for (int i = 0; i < file.freqTable.getSize(); i++) {
         // traverse each hash bucket
         HashNode* current = file.freqTable.getTable()[i];
@@ -125,7 +125,7 @@ safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const str
         FileNode* current = wordResults;
         
         while (current != nullptr) {
-            // new entry if doesnt exist in results
+            //new entry if file doesnt already exist in results
             bool found = false;
             for (int j = 0; j < enhancedResults.size(); j++) {
                 if (enhancedResults[j].filename == current->filename) {
@@ -192,11 +192,11 @@ safeArray<FileNode> performPhraseSearch(InvertedIndexHashTable& globalIndex, con
         FileData& file = allFiles[fileIdx];
         int phraseMatches = 0;
         
-        // Checking each possible starting position in the file's tokens
+        // Check each possible starting position in the file's tokens
         for (int startPos = 0; startPos <= file.tokens.size() - queryWords.size(); startPos++) {
             bool exactMatch = true;
             
-            // make sure each word in the phrase appears consecutively
+            // Verify each word in the phrase appears consecutively
             for (int i = 0; i < queryWords.size(); i++) {
                 if (startPos + i >= file.tokens.size() || 
                     file.tokens[startPos + i] != queryWords[i]) {
@@ -228,7 +228,7 @@ safeArray<FileNode> performSubstringSearch(InvertedIndexHashTable& globalIndex, 
     
     if (query.empty()) return results;
     
-    // Convert to lowercase 
+    // Convert to lowercase for case-insensitive search
     string searchTerm = query;
     for (char& c : searchTerm) c = tolower(c);
     
@@ -237,7 +237,7 @@ safeArray<FileNode> performSubstringSearch(InvertedIndexHashTable& globalIndex, 
         InvertedIndexTableNode* wordNode = globalIndex.getTable()[i];
         while (wordNode != nullptr) {
             string currentWord = wordNode->word;
-            for (char& c : currentWord) c = tolower(c); 
+            for (char& c : currentWord) c = tolower(c); // Case-insensitive
             
             // Check if this word contains the substring
             if (currentWord.find(searchTerm) != string::npos) {
