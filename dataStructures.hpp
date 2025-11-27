@@ -30,7 +30,7 @@ class safeArray {
         delete[] dynamicArray; 
         dynamicArray = newArray;
         ncols++;
-    } // add resize function instead of copying everytime 
+    } 
 
     void clear() {
         delete[] dynamicArray;
@@ -44,9 +44,8 @@ class safeArray {
     }
 
     T &operator[] (int i) const {
-        if(i<0 || i>ncols-1 ) {
-            cout << "Boundary Error\n";
-            exit(1);
+        if (i < 0 || i >= ncols) {
+            throw std::out_of_range("safeArray index out of bounds");
         }
         return dynamicArray[i];
     }
@@ -58,7 +57,7 @@ class safeArray {
         delete[] dynamicArray;
         dynamicArray = NULL;
         ncols = rhs.ncols;
-            dynamicArray = new T[ncols];
+        dynamicArray = new T[ncols];
         for(int i = 0; i < ncols; i++)
             dynamicArray[i] = rhs.dynamicArray[i];
 
@@ -74,17 +73,20 @@ class safeArray {
     int size() const {
         return ncols;
     }
+
+    bool isEmpty() const {
+        return ncols == 0;
+    }
 };
 
-struct HashNode { // for the hash table which stores frequency of words in a file for each file 
+struct HashNode { // for the hash table that is storing frequency of words in a file for each file 
     string word;
     int count;
-    HashNode* next; // next node in case of collisions
+    safeArray<int> positions; // word's positions in the file 
+    HashNode* next;
 
-    HashNode(string word, int count) {  
-        this->word = word;
-        this->count = count;
-        this->next = nullptr;
+    HashNode(string word, int count, int position = -1) : word(word), count(count), next(nullptr) {
+        if(position != -1) positions.pushback(position);
     }
 };
 
@@ -101,7 +103,7 @@ class HashTable {
     }
 
     public:
-    HashTable(int size = 101) { //size 101 gives even distrubution as it is a prime number, and not too large for our files 
+    HashTable(int size = 101) { //look in to hash function effeciency later
         tableSize = size;
         table = new HashNode*[tableSize];
         for (int i = 0; i< tableSize; i++) {
@@ -114,13 +116,13 @@ class HashTable {
     }
 
     HashTable(const HashTable &rhs) {
-        tableSize = rhs.tableSize; // self assignment
+        tableSize = rhs.tableSize; 
 
         table = new HashNode*[tableSize];
         for (int i = 0; i < tableSize; i++) {
             if (rhs.table[i] == nullptr) { // no collisions, next ptr is null, so move on to the next index
                 table[i] = nullptr;
-            } else { // the linked list is also a pointer so deep copy all nodes 
+            } else { // the linked list is also a pointer so deep copy 
                 HashNode* currentSrc = rhs.table[i];
                 HashNode* currentDest = new HashNode(currentSrc->word, currentSrc->count);
 
@@ -138,7 +140,7 @@ class HashTable {
     HashTable& operator=(const HashTable &rhs) {
         if (this == &rhs) {return *this; }
 
-        for (int i = 0; i < tableSize; i++) { //cleaning existing data before assigning new data
+        for (int i = 0; i < tableSize; i++) { //cleaning existing data
             HashNode* current = table[i];
             while (current != nullptr) {
                 HashNode* next = current->next;
@@ -147,7 +149,7 @@ class HashTable {
             }
         }
         delete[] table;
-        tableSize = rhs.tableSize; // allocate new table
+        tableSize = rhs.tableSize; 
         table = new HashNode*[tableSize];
 
         for (int i = 0; i < tableSize; i++) {
@@ -168,22 +170,33 @@ class HashTable {
         return *this;
     }
 
-    void insertWord(const string& word) {
+    void insertWord(const string& word,int position =-1) {
         int index = hashFunction(word);
         HashNode* head = table[index];
-        // Search if word already exists in the hash table and if it does increase its count 
         HashNode* temp = head;
         while (temp != nullptr) {
             if (temp->word == word) {
                 temp->count++;
+                if(position != -1) {
+                    temp->positions.pushback(position);
+                }
                 return;
             }
             temp = temp->next;
         }
-        // create a new node and insert at head if value doesnt already exisst
         HashNode* newNode = new HashNode(word, 1);
         newNode->next = head;
         table[index] = newNode;
+    }
+
+    HashNode* findWordNode(const string& word) {
+        int index = hashFunction(word);
+        HashNode* temp = table[index];
+        while (temp != nullptr) {
+            if (temp->word == word) return temp;
+            temp = temp->next;
+        }
+        return nullptr;
     }
 
     int getFrequency(const string& word) {
@@ -229,13 +242,13 @@ class HashTable {
     }
 };
 
-struct FileData { // being used in functions.cpp to store data of each file
+struct FileData { // is used to store data of each file
     string filename;
     safeArray<string> tokens;
     HashTable freqTable;
 };
 
-struct FileNode {  //linked list for frequency and destination file of given word in inverted index table 
+struct FileNode {  //linked list for frequency and source file of word in inverted index table 
     string filename;
     int frequency;
     FileNode* next;
@@ -258,7 +271,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
     InvertedIndexTableNode** table;
     // table
     // ↓
-    // pointer → array of pointers → each points to the head of a linked list of InvertedIndexTableNode
+    // pointer → array of pointers → which each points to the head of a linked list of InvertedIndexTableNode
     // inside every InvertedIndexTableNode there is a linked list of FileNodes
 
     int hashFunction(const string& key) {
@@ -275,6 +288,10 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
         for (int i = 0; i < tableSize; i++)
             table[i] = nullptr;
     }
+
+    int getTableSize() const { return tableSize; }
+
+    InvertedIndexTableNode** getTable() const { return table; }
 
     InvertedIndexHashTable(const InvertedIndexHashTable& rhs) {
         tableSize = rhs.tableSize;
@@ -306,12 +323,12 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
 
                 srcWordNode = srcWordNode->next;
 
-                // Deep copy the rest of the word nodes in the chain
+                // Deep copy rest of the word nodes in the list
                 while (srcWordNode != nullptr) {
                     destWordNode->next = new InvertedIndexTableNode(srcWordNode->word);
                     destWordNode = destWordNode->next;
 
-                    // Copy file list for each subsequent word
+                    // Copy file list for each next word
                     if (srcWordNode->fileList != nullptr) {
                         FileNode* srcFileNode = srcWordNode->fileList;
                         FileNode* destFileNode = new FileNode(srcFileNode->filename, srcFileNode->frequency);
@@ -346,7 +363,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
                     delete tempFile;
                 }
 
-                // delete the word node itself
+                // delete the node itself
                 InvertedIndexTableNode* tempWord = wordNode;
                 wordNode = wordNode->next;
                 delete tempWord;
@@ -354,7 +371,6 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
         }
         delete[] table;
 
-        // allocate new table and copy
         tableSize = rhs.tableSize;
         table = new InvertedIndexTableNode*[tableSize];
 
@@ -383,7 +399,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
 
                 srcWordNode = srcWordNode->next;
 
-                // Copy remaining word nodes in chain
+                // Copy remaining word nodes in lsit
                 while (srcWordNode != nullptr) {
                     destWordNode->next = new InvertedIndexTableNode(srcWordNode->word);
                     destWordNode = destWordNode->next;
@@ -426,7 +442,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
                     }
                     f = f->next;
                 }
-                // if not found, add new file node
+                // word not found, so add new
                 FileNode* newFile = new FileNode(filename, frequency);
                 newFile->next = current->fileList;
                 current->fileList = newFile;
@@ -444,7 +460,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
     }
 
 
-    FileNode* search(const string& word) { // return pointer to file list of given word
+    FileNode* search(const string& word) { // will return a pointer to file list of given word
         int index = hashFunction(word);
         InvertedIndexTableNode* current = table[index];
 
@@ -457,7 +473,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
         return nullptr;
     }
 
-    void display() {
+    void display() { 
         cout << "\n--GLOBAL INVERTED INDEX--" << endl;
         for (int i = 0; i < tableSize; i++) {
             InvertedIndexTableNode* current = table[i];
@@ -475,7 +491,7 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
     }
 };
 
-struct SearchHistoryNode { //linked list based stack for search history
+struct SearchHistoryNode { // linked list based stack for search history
     string query;
     SearchHistoryNode* next;
     SearchHistoryNode(string query) : query(query), next(nullptr) {}
@@ -535,5 +551,89 @@ class SearchHistory { // history stack
         clear();
     }
 };
-#endif
+
+struct TrieNode {
+    bool isEnd;
+    TrieNode* children[26];
+
+    TrieNode() {
+        isEnd = false;
+        for (int i = 0; i < 26; i++) {
+            children[i] = nullptr;
+        }
+    }
+};
+
+class Trie {
+    private:
+    TrieNode* root;
+
+    void dfs(TrieNode* node, string& current, safeArray<string>& result) {
+        if (node->isEnd)
+            result.pushback(current);
+
+        for (int i = 0; i < 26; i++) {
+            if (node->children[i] != nullptr) {
+                current.push_back(char('a' + i));
+                dfs(node->children[i], current, result);
+                current.pop_back(); 
+            }
+        }
+    }
     
+    public:
+    Trie() { root = new TrieNode(); }
+
+    void insert(const string& word) {
+        TrieNode* curr = root;
+        for (char c : word) {
+            if (c >= 'A' && c <= 'Z')
+                c = c - 'A' + 'a';
+
+            if (c < 'a' || c > 'z') 
+                continue;
+
+            int index = c - 'a';
+            if (curr->children[index] == nullptr)
+                curr->children[index] = new TrieNode();
+
+            curr = curr->children[index];
+        }
+        curr->isEnd = true;
+    }
+
+    safeArray<string> getSuggestions(const string& input) {
+        safeArray<string> result;
+        if (input.empty()) return result;
+    
+        string lastWord = input;
+        size_t lastSpace = input.find_last_of(' '); // extract last word only
+        if (lastSpace != string::npos) {
+            lastWord = input.substr(lastSpace + 1);
+        }
+        
+        if (lastWord.empty()) return result;
+        
+        TrieNode* curr = root;
+        string temp = lastWord;
+
+        //navigate to the node for the last word prefix
+        for (char c : lastWord) {
+            if (c >= 'A' && c <= 'Z') {
+                c = c - 'A' + 'a';
+            }
+            if (c < 'a' || c > 'z') {
+                return result;
+            }
+
+            int idx = c - 'a';
+            if (curr->children[idx] == nullptr) {
+                return result; 
+            }
+            curr = curr->children[idx];
+        }
+        dfs(curr, temp, result); // getting completions for last word
+        return result;
+    }
+};
+#endif
