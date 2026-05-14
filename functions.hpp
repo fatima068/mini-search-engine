@@ -73,41 +73,37 @@ void buildInvertedIndex(safeArray<FileData>& allFiles, InvertedIndexHashTable& g
     cout << endl<< "built global inverted index" << endl;
 }
 
-void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<int> &freqs) { // input n and file, then display top n word in that file
-    cout << "\ntop " <<n << " words in file: " << file.filename << endl;
+void displayTopWords(FileData& file, int n, safeArray<string> &words, safeArray<int> &freqs) {
+    words.clear();
+    freqs.clear();
 
-    //Extract all (word, frequency) pairs into arrays for sorting because sorting is easier on arrays
-    for (int i = 0; i < file.freqTable.getSize(); i++) {
-        // traverse each hash bucket
-        HashNode* current = file.freqTable.getTable()[i];
-        while (current != nullptr) {
-            words.pushback(current->word);
-            freqs.pushback(current->count);
-            current = current->next;
-        }
-    } 
+    MaxHeap heap;
 
-    //sort by frequency (selection sort in descending order)
-    for (int i = 0; i < freqs.size() - 1; i++) {
-        int maxIndex = i;
-        for (int j = i + 1; j < freqs.size(); j++) {
-            if (freqs[j] > freqs[maxIndex])
-                maxIndex = j;
+    HashNode** table = file.freqTable.getTable();
+    int tableSize = file.freqTable.getSize();
+
+    // Correct traversal of hash table wid linked lists
+    for (int i = 0; i < tableSize; i++) {
+        HashNode* bucket = table[i];
+        while (bucket != nullptr) {
+            if (bucket->word != "") {
+                heap.insert(bucket->word, bucket->count);
+            }
+            bucket = bucket->next;
         }
-        if (maxIndex != i) {
-            int tempFreq = freqs[i];
-            string tempWord = words[i];
-            freqs[i] = freqs[maxIndex];
-            words[i] = words[maxIndex];
-            freqs[maxIndex] = tempFreq;
-            words[maxIndex] = tempWord;
-        }
+    }
+    // Extract top N
+    for (int i = 0; i < n && !heap.isEmpty(); i++) {
+        HeapNode node = heap.extractMax();
+        words.pushback(node.word);
+        freqs.pushback(node.freq);
     }
 }
 
+
 safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const string& query) { //take inverted index & query and return array of results
     safeArray<FileNode> results;
-    safeArray<string> queryWords; //tokenize query
+    safeArray<string> queryWords;
     stringstream ss(query);
     string word;
     while (ss>>word) { queryWords.pushback(word);}
@@ -120,7 +116,7 @@ safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const str
     };
     
     safeArray<EnhancedFileNode> enhancedResults;
-        for (int i = 0; i < queryWords.size(); i++) {
+    for (int i = 0; i < queryWords.size(); i++) {
         FileNode* wordResults = globalIndex.search(queryWords[i]);
         FileNode* current = wordResults;
         
@@ -173,26 +169,22 @@ safeArray<FileNode> performSearch(InvertedIndexHashTable& globalIndex, const str
     return results;
 }
 
-// PHRASE SEARCH - Exact sequence of words
 safeArray<FileNode> performPhraseSearch(InvertedIndexHashTable& globalIndex, const string& query, safeArray<FileData>& allFiles) {
     safeArray<FileNode> results;
     safeArray<string> queryWords;
-    
-    // Tokenize the query phrase
+
     stringstream ss(query);
     string word;
     while (ss >> word) {
         queryWords.pushback(word);
     }
     
-    if (queryWords.size() < 2) return results; // Need at least 2 words for phrase
+    if (queryWords.size() < 2) return results;
     
     // Search through each file
     for (int fileIdx = 0; fileIdx < allFiles.size(); fileIdx++) {
         FileData& file = allFiles[fileIdx];
         int phraseMatches = 0;
-        
-        // Check each possible starting position in the file's tokens
         for (int startPos = 0; startPos <= file.tokens.size() - queryWords.size(); startPos++) {
             bool exactMatch = true;
             
@@ -204,7 +196,6 @@ safeArray<FileNode> performPhraseSearch(InvertedIndexHashTable& globalIndex, con
                     break;
                 }
             }
-            
             if (exactMatch) {
                 phraseMatches++;
             }
@@ -222,25 +213,83 @@ safeArray<FileNode> performPhraseSearch(InvertedIndexHashTable& globalIndex, con
     return results;
 }
 
-// SUBSTRING SEARCH - Partial word matching
+safeArray<int> buildLPS(const string& pattern) {
+    int m = pattern.length();
+    safeArray<int> lps;
+    for (int i = 0; i < m; i++) {
+        lps.pushback(0);
+    }
+    int len = 0; 
+    int i = 1;
+    
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    return lps;
+}
+
+bool kmpSearch(const string& text, const string& pattern) { // true if pattern found
+    if (pattern.empty()) return true;
+    if (text.empty()) return false;
+    
+    int n = text.length();
+    int m = pattern.length();
+    
+    if (m > n) return false;
+    
+    safeArray<int> lps = buildLPS(pattern);
+    
+    int i = 0; // index for text
+    int j = 0; // index for pattern
+    
+    while (i < n) {
+        if (pattern[j] == text[i]) {
+            i++;
+            j++;
+        }
+        
+        if (j == m) {
+            return true; // Pattern found
+        } else if (i < n && pattern[j] != text[i]) {
+            if (j != 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+    
+    return false;
+}
+
 safeArray<FileNode> performSubstringSearch(InvertedIndexHashTable& globalIndex, const string& query) {
     safeArray<FileNode> results;
     
     if (query.empty()) return results;
     
-    // Convert to lowercase for case-insensitive search
     string searchTerm = query;
     for (char& c : searchTerm) c = tolower(c);
     
-    // Search through all words in inverted index
     for (int i = 0; i < globalIndex.getTableSize(); i++) {
         InvertedIndexTableNode* wordNode = globalIndex.getTable()[i];
         while (wordNode != nullptr) {
             string currentWord = wordNode->word;
-            for (char& c : currentWord) c = tolower(c); // Case-insensitive
+            string lowerWord = currentWord;
+            for (char& c : lowerWord) c = tolower(c);
             
-            // Check if this word contains the substring
-            if (currentWord.find(searchTerm) != string::npos) {
+            // Use KMP 
+            if (kmpSearch(lowerWord, searchTerm)) {  
                 // Add all files containing this word
                 FileNode* filePtr = wordNode->fileList;
                 while (filePtr != nullptr) {
@@ -266,7 +315,7 @@ safeArray<FileNode> performSubstringSearch(InvertedIndexHashTable& globalIndex, 
         }
     }
     
-    // Sort by frequency (descending)
+    // Sort by frequency (descending) 
     for (int i = 0; i < results.size() - 1; i++) {
         int maxIndex = i;
         for (int j = i + 1; j < results.size(); j++) {
@@ -283,36 +332,36 @@ safeArray<FileNode> performSubstringSearch(InvertedIndexHashTable& globalIndex, 
     return results;
 }
 
-void simpleHashTableVisualization(InvertedIndexHashTable& globalIndex) {
-    cout << "\n=== HASH TABLE STRUCTURE ===" << globalIndex.getTableSize() << endl;
+// void simpleHashTableVisualization(InvertedIndexHashTable& globalIndex) {
+//     cout << "\n=== HASH TABLE STRUCTURE ===" << globalIndex.getTableSize() << endl;
     
-    for (int i = 0; i < globalIndex.getTableSize(); i++) {
-        cout << "[" << i << "]: ";
+//     for (int i = 0; i < globalIndex.getTableSize(); i++) {
+//         cout << "[" << i << "]: ";
         
-        InvertedIndexTableNode* current = globalIndex.getTable()[i];
-        if (current == nullptr) {
-            cout << "NULL" << endl;
-            continue;
-        }
+//         InvertedIndexTableNode* current = globalIndex.getTable()[i];
+//         if (current == nullptr) {
+//             cout << "NULL" << endl;
+//             continue;
+//         }
         
-        while (current != nullptr) {
-            cout << current->word;
+//         while (current != nullptr) {
+//             cout << current->word;
             
-            // Show file count
-            int fileCount = 0;
-            FileNode* filePtr = current->fileList;
-            while (filePtr != nullptr) {
-                fileCount++;
-                filePtr = filePtr->next;
-            }
-            cout << "(" << fileCount << ")";
+//             // Show file count
+//             int fileCount = 0;
+//             FileNode* filePtr = current->fileList;
+//             while (filePtr != nullptr) {
+//                 fileCount++;
+//                 filePtr = filePtr->next;
+//             }
+//             cout << "(" << fileCount << ")";
             
-            if (current->next != nullptr) {
-                cout << " -> ";
-            }
-            current = current->next;
-        }
-        cout << endl;
-    }
-}
+//             if (current->next != nullptr) {
+//                 cout << " -> ";
+//             }
+//             current = current->next;
+//         }
+//         cout << endl;
+//     }
+// }
 #endif

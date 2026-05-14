@@ -8,29 +8,36 @@ using namespace std;
 template <typename T>
 class safeArray {
     private:
-    int ncols; 
+    int ncols, capacity; 
     T *dynamicArray;
 
     public:
-    safeArray() : ncols(0), dynamicArray(NULL) {}
+    safeArray() : ncols(0), capacity(100) {
+        dynamicArray = new T[capacity];
+    }
 
     safeArray (const safeArray & rhs) {
         ncols = rhs.ncols;
+        capacity = rhs.capacity;
         dynamicArray = new T[ncols];
         for(int i = 0; i < ncols; i++)
             dynamicArray[i] = rhs.dynamicArray[i];
     }
 
-    void pushback(const T& val) {
-        T *newArray = new T[ncols + 1];
-        for (int i = 0; i < ncols; ++i) {
+    void pushback(const T& val) { 
+        T *newArray = new T[ncols + 1]; 
+        for (int i = 0; i < ncols; ++i) 
+        { 
             newArray[i] = dynamicArray[i]; 
-        }
+        } 
         newArray[ncols] = val; 
-        delete[] dynamicArray; 
-        dynamicArray = newArray;
-        ncols++;
-    } // add resize function instead of copying everytime 
+        delete[] dynamicArray;
+         dynamicArray = newArray; 
+         ncols++; } // add resize function instead of copying everytime write good resize function
+
+    void popBack() {
+        if (ncols > 0) { ncols--; }
+    }
 
     void clear() {
         delete[] dynamicArray;
@@ -103,7 +110,7 @@ class HashTable {
     }
 
     public:
-    HashTable(int size = 101) { //look in to hash function effeciency later
+    HashTable(int size = 101) {
         tableSize = size;
         table = new HashNode*[tableSize];
         for (int i = 0; i< tableSize; i++) {
@@ -211,7 +218,7 @@ class HashTable {
         return 0; 
     }
 
-    void display() {
+    void display() { 
         for (int i = 0; i < tableSize; i++) {
             HashNode* current = table[i];
             if (current != nullptr) {
@@ -490,6 +497,75 @@ class InvertedIndexHashTable { // maps each word to the list of files in which i
         }
     }
 };
+
+struct HeapNode {
+    string word;
+    int freq;
+};
+
+class MaxHeap {
+private:
+    safeArray<HeapNode> arr;
+
+    void heapifyUp(int i) {
+        while (i > 0) {
+            int parent = (i - 1) / 2;
+            if (arr[i].freq > arr[parent].freq) {
+                HeapNode temp = arr[i];
+                arr[i] = arr[parent];
+                arr[parent] = temp;
+                i = parent;
+            } 
+            else break;
+        }
+    }
+
+    void heapifyDown(int i) {
+        int size = arr.size();
+        while (true) {
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
+            int largest = i;
+
+            if (left < size && arr[left].freq > arr[largest].freq)
+                largest = left;
+
+            if (right < size && arr[right].freq > arr[largest].freq)
+                largest = right;
+
+            if (largest != i) {
+                HeapNode temp = arr[i];
+                arr[i] = arr[largest];
+                arr[largest] = temp;
+                i = largest;
+            } 
+            else break;
+        }
+    }
+
+    public:
+    void insert(const string& word, int freq) {
+        HeapNode node{word, freq};
+        arr.pushback(node);
+        heapifyUp(arr.size() - 1);
+    }
+
+    HeapNode extractMax() {
+        if (arr.size() == 0)
+            return HeapNode{"", 0};
+
+        HeapNode root = arr[0];
+        arr[0] = arr[arr.size() - 1];
+        arr.popBack();
+        heapifyDown(0);
+        return root;
+    }
+
+    bool isEmpty() const {
+        return arr.size() == 0;
+    }
+};
+
 
 struct SearchHistoryNode { //linked list based stack for search history
     string query;

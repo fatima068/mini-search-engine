@@ -54,9 +54,9 @@ int main() {
     chrono::duration<double> duration = end - start;
     string preprocTime =  "Total pre-processing Time (cleaning, tokenization, inverted index building): " + to_string(duration.count()) + " seconds...";
     
-    simpleHashTableVisualization(globalIndex); 
-    cout <<endl<<endl <<" Complete Inverted Index: " << endl;
-    globalIndex.display();
+    //simpleHashTableVisualization(globalIndex); 
+    //cout <<endl<<endl <<" Complete Inverted Index: " << endl;
+    //globalIndex.display();
 
     Trie trie;
     for (int i = 0; i < allFiles.size(); i++) {
@@ -86,30 +86,36 @@ int main() {
     topBar.setOutlineThickness(1);
     topBar.setOutlineColor(buttonBorderColor);
     
-    myText titleText(font, "boogle.", 80, {windowCenter.x - 140.f, 150.f}, titleColor, Text::Bold);
-    myText subtitleText(font, "mini search engine", 20, {windowCenter.x-100.f, 240.f}, textColor, Text::Regular);
-    myText footerText(font, "boogle - copyright 1995", 14, {700.f, 520.f}, textColor, Text::Regular);
+    myText titleText(font, "google", 80, {windowCenter.x - 140.f, 150.f}, titleColor, Text::Bold);
+    myText subtitleText(font, "mini search engine", 20, {windowCenter.x-100.f, 250.f}, textColor, Text::Regular);
     myText preprocTimeText(font, preprocTime, 16, {10.f, 805.f}, textColor, Text::Regular);
-    myText searchPrompt(font, "Enter search term:", 18, {600.f, 320.f}, textColor, Text::Regular);
+    myText searchPrompt(font, "Enter search term:", 18, {600.f, 310.f}, textColor, Text::Regular);
     myText historyHeader(font, "Search History", 24, {100.f, 150.f}, titleColor, Text::Bold);
     myText rankedHeader(font, "Top Ranked Words", 24, {100.f, 150.f}, titleColor, Text::Bold);
-    myText filePrompt(font, "File number (1-" + to_string(allFiles.size()) + "):", 16, {600.f, 270.f}, textColor, Text::Regular);
-    myText nPrompt(font, "Number of top words:", 16, {900.f, 270.f}, textColor, Text::Regular);
+    myText filePrompt(font, "File number (1-" + to_string(allFiles.size()) + "):", 16, {600.f, 230.f}, textColor, Text::Regular);
+    myText nPrompt(font, "Number of top words:", 16, {900.f, 230.f}, textColor, Text::Regular);
     myText searchHeader(font, "Web Search", 24, {100.f, 320.f}, titleColor, Text::Bold);
     SuggestionBox searchSuggestionBox(font, {600.f, 390.f}, {500.f, 100.f});
     
-    InputBox searchInputBox(font, {600.f, 350.f}, {500.f, 35.f});
-    InputBox fileInputBox(font, {600.f, 300.f}, {200.f, 35.f});
-    InputBox nInputBox(font, {900.f, 300.f}, {200.f, 35.f});
+    InputBox searchInputBox(font, {600.f, 340.f}, {500.f, 35.f});
+    InputBox fileInputBox(font, {600.f, 260.f}, {200.f, 35.f});
+    InputBox nInputBox(font, {900.f, 260.f}, {200.f, 35.f});
     
-    Button searchButton(font, "SEARCH", {1120.f, 350.f}, {80.f, 35.f}, buttonBorderColor, textColor);
+    Button searchButton(font, "SEARCH", {1180.f, 355.f}, {80.f, 35.f}, buttonBorderColor, textColor);
     Button button1(font, "Search Word", {600.f, 400.f}, {220.f, 60.f}, buttonBorderColor, textColor);
+    button1.setTextPosition({600.f - 50.f, 400.f - 10.f});
     Button button2(font, "View Search History", {900.f, 400.f}, {220.f, 60.f}, buttonBorderColor, textColor);
+    button2.setTextPosition({900.f - 80.f, 400.f - 10.f});
     Button button3(font, "Top N Ranked Words", {1200.f, 400.f}, {220.f, 60.f}, buttonBorderColor, textColor);
+    button3.setTextPosition({1200.f - 80.f, 400.f - 10.f});
     Button backButton(font, "BACK", {100.f, 100.f}, {80.f, 30.f}, buttonBorderColor, textColor);
-    Button clearAllHistoryButton(font, "CLEAR ALL HISTORY", {1200.f, 750.f}, {160.f, 30.f}, buttonBorderColor, textColor);
-    Button clearRecentHistoryButton(font, "CLEAR MOST RECENT HISTORY", {900.f, 750.f}, {160.f, 30.f}, buttonBorderColor, textColor);
-    Button rankedSearchButton(font, "GET WORDS", {1150.f, 300.f}, {120.f, 35.f}, buttonBorderColor, textColor);
+    backButton.setTextPosition({100.f - 23.f, 100.f - 10.f});
+    Button clearAllHistoryButton(font, "CLEAR ALL HISTORY", {1100.f, 750.f}, {180.f, 30.f}, buttonBorderColor, textColor);
+    clearAllHistoryButton.setTextPosition({1100.f - 85.f, 750.f - 10.f});
+    Button clearRecentHistoryButton(font, "CLEAR MOST RECENT HISTORY", {800.f, 750.f}, {280.f, 30.f}, buttonBorderColor, textColor);
+    clearRecentHistoryButton.setTextPosition({800.f - 135.f, 750.f - 10.f});
+    Button rankedSearchButton(font, "GET WORDS", {1250.f, 275.f}, {120.f, 35.f}, buttonBorderColor, textColor);
+    rankedSearchButton.setTextPosition({1250.f - 50.f, 275.f - 10.f});
 
     RectangleShape statusBar({1800.f, 30.f});
     statusBar.setPosition({0.f, 800.f});
@@ -118,7 +124,7 @@ int main() {
     statusBar.setOutlineColor(buttonBorderColor);
 
     ScrollablePanel searchResultsPanel(font, Vector2f(100.f, 400.f), Vector2f(1600.f, 400.f));
-    ScrollablePanel rankedResultsPanel(font, Vector2f(100.f, 350.f), Vector2f(1600.f, 430.f));
+    ScrollablePanel rankedResultsPanel(font, Vector2f(100.f, 320.f), Vector2f(1600.f, 460.f));
 
     RectangleShape historyBox({1600.f, 500.f});
     historyBox.setPosition({100.f, 200.f});
@@ -142,14 +148,31 @@ int main() {
             results = performPhraseSearch(globalIndex, currentInput, allFiles);
             searchType = "phrase";
         }
-        else { //word search (entire exact word or substring)
+        else { // search entire exact word or substring
             safeArray<FileNode> exactResults = performSearch(globalIndex, currentInput);
-            if (exactResults.size() > 0) {
-                results = exactResults;
+            safeArray<FileNode> substringResults = performSubstringSearch(globalIndex, currentInput);
+            results = exactResults;
+            // Add substring results that aren't already in exact results
+            for (int i = 0; i < substringResults.size(); i++) {
+                bool alreadyExists = false;
+                for (int j = 0; j < exactResults.size(); j++) {
+                    if (substringResults[i].filename == exactResults[j].filename) {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                if (!alreadyExists) {
+                    results.pushback(substringResults[i]);
+                }
+            }
+            
+            if (exactResults.size() > 0 && substringResults.size() > 0) {
+                searchType = "combined";
+            } 
+            else if (exactResults.size() > 0) {
                 searchType = "exact";
             } 
-            else{
-                results = performSubstringSearch(globalIndex, currentInput);
+            else {
                 searchType = "substring";
             }
         }
@@ -187,7 +210,6 @@ int main() {
     };
 
     auto performRankedSearchAction = [&]() {
-        cout << "Get words performed!" << endl;
         string fileInput = fileInputBox.getText();
         string nInput = nInputBox.getText();
         
@@ -372,7 +394,6 @@ int main() {
             button3.draw(window1);
             window1.draw(statusBar);
             preprocTimeText.draw(window1);
-            footerText.draw(window1);
         }
         else {
             backButton.draw(window1);

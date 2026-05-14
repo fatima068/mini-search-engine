@@ -20,6 +20,8 @@ class ScrollablePanel {
 
     public:
     ScrollablePanel(Font& fontRef, Vector2f position, Vector2f size, float lineH = 25.f) :font(fontRef), scrollOffset(0.f), lineHeight(lineH) {
+        size.y -= 20.f;
+        position.y -= 15.f;
         container.setSize(size);
         container.setPosition(position);
         container.setFillColor(Color::White);
@@ -37,10 +39,9 @@ class ScrollablePanel {
     }
 
     void draw(RenderWindow& window, Color textColor = Color::Black) {
-        window.draw(container);
-        
-        float startY = container.getPosition().y;
-        float endY = startY + container.getSize().y;
+        window.draw(container);   
+        float startY = container.getPosition().y + 20.f;
+        float endY = startY + container.getSize().y - 30.f;
         float y = startY - scrollOffset;
         
         for (int i = 0; i < content.size(); i++) {
@@ -68,14 +69,24 @@ class ScrollablePanel {
     }
     
     void updateScrollbar() {
-        float visibleRatio = container.getSize().y / getContentHeight();
-        float scrollbarHeight = container.getSize().y * visibleRatio;
-        float scrollRatio = scrollOffset / (getContentHeight() - container.getSize().y);
+        if (getContentHeight() <= container.getSize().y) {
+            scrollbar.setSize({15.f, container.getSize().y});
+            scrollbar.setPosition({container.getPosition().x + container.getSize().x - 15.f, container.getPosition().y});
+            return;
+        }
+
+        float scrollbarHeight = container.getSize().y * (container.getSize().y / getContentHeight());
+        float scrollRatio;
+        if ((getContentHeight() - container.getSize().y) < 0.f) { 
+            scrollRatio = 0.f;
+        }
+        else {
+            scrollRatio = scrollOffset / (getContentHeight() - container.getSize().y);
+        }
+
         float scrollbarY = container.getPosition().y + scrollRatio * (container.getSize().y - scrollbarHeight);
-        
-        scrollbar.setSize({15.f, scrollbarHeight});
-        scrollbar.setPosition({container.getPosition().x + container.getSize().x - 15.f, scrollbarY});
     }
+
     
     float clamp(float value, float min, float max) {
         if (value < min) return min;
@@ -200,47 +211,47 @@ public:
     }
 
     void handleEvent(const Event& event, Vector2f mousePos, SuggestionBox &searchSuggestionBox, safeArray<string> &suggestionList, Trie &trie) {
-    if (event.is<Event::MouseButtonPressed>()) {    
-        bool wasActive = isActive;
-        string empty = " ";
-        bool clickOnInput = box.getGlobalBounds().contains(mousePos); //is input box clikced or suggestion box?
-        bool clickOnSuggestion = searchSuggestionBox.isVisible() && searchSuggestionBox.suggestionClicked(mousePos, empty);
-        
-        isActive = clickOnInput || clickOnSuggestion;
-        box.setOutlineColor(isActive ? Color::Blue : Color(128, 128, 128));
-        
-        if (isActive && !wasActive) {
-            cursorClock.restart();
+        if (event.is<Event::MouseButtonPressed>()) {    
+            bool wasActive = isActive;
+            string empty = " ";
+            bool clickOnInput = box.getGlobalBounds().contains(mousePos); //is input box clikced or suggestion box?
+            bool clickOnSuggestion = searchSuggestionBox.isVisible() && searchSuggestionBox.suggestionClicked(mousePos, empty);
+            
+            isActive = clickOnInput || clickOnSuggestion;
+            box.setOutlineColor(isActive ? Color::Blue : Color(128, 128, 128));
+            
+            if (isActive && !wasActive) {
+                cursorClock.restart();
 
+                if (!content.empty()) {
+                    suggestionList = trie.getSuggestions(content);
+                    searchSuggestionBox.setSuggestions(suggestionList);
+                    Vector2f inputPos = getPosition();
+                    Vector2f inputSize = getSize();
+                    searchSuggestionBox.setPosition({inputPos.x, inputPos.y + inputSize.y});
+                }
+            } else if (!isActive && !clickOnSuggestion) {
+                searchSuggestionBox.hide();
+            }
+            return;
+        }
+        
+        if (!isActive) return;
+        
+        if (const auto* textEvent = event.getIf<Event::TextEntered>()) {
+            handleTextInput(textEvent->unicode);
             if (!content.empty()) {
                 suggestionList = trie.getSuggestions(content);
                 searchSuggestionBox.setSuggestions(suggestionList);
+
                 Vector2f inputPos = getPosition();
                 Vector2f inputSize = getSize();
                 searchSuggestionBox.setPosition({inputPos.x, inputPos.y + inputSize.y});
-            }
-        } else if (!isActive && !clickOnSuggestion) {
-            searchSuggestionBox.hide();
+            } 
+            else
+                searchSuggestionBox.hide();
         }
-        return;
     }
-    
-    if (!isActive) return;
-    
-    if (const auto* textEvent = event.getIf<Event::TextEntered>()) {
-        handleTextInput(textEvent->unicode);
-        if (!content.empty()) {
-            suggestionList = trie.getSuggestions(content);
-            searchSuggestionBox.setSuggestions(suggestionList);
-
-            Vector2f inputPos = getPosition();
-            Vector2f inputSize = getSize();
-            searchSuggestionBox.setPosition({inputPos.x, inputPos.y + inputSize.y});
-        } 
-        else
-            searchSuggestionBox.hide();
-    }
-}
     
     string getText()const { return content; }
     void setText(const string& newText) { content = newText; updateDisplayText(); }
@@ -317,9 +328,13 @@ public:
         shape.setOutlineThickness(2);
         shape.setOutlineColor(borderColor);
 
-        text.setFillColor(textColor);         
+        text.setFillColor(textColor); 
         text.setPosition({position.x-40, position.y-10});
         text.setStyle(Text::Bold);
+    }
+
+    void setTextPosition(Vector2f position) {
+        text.setPosition(position);
     }
     
     bool contains(Vector2f point) {return shape.getGlobalBounds().contains(point); }
